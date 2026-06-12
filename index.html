@@ -564,11 +564,12 @@ window._snap = {
           { text: "Ottawa River and Andrew Haydon Park views", category: "building", learned: "2026-06-12", source: "Website" },
           { text: "Heat and water included, hydro extra", category: "utilities", learned: "2026-06-12", source: "Website" },
           { text: "Exclusive fitness facility in building — only Orion has this on-site", category: "amenity", learned: "2026-06-12", source: "Website" },
-          { text: "Indoor and outdoor parking available (additional fee)", category: "parking", learned: "2026-06-12", source: "Website" },
+          { text: "Indoor parking: WAITLIST — up to 1 year wait. Do NOT offer indoor parking to prospects right now. Outdoor parking only.", category: "parking", learned: "2026-06-12", source: "Matt (internal)" },
+          { text: "Outdoor parking available (additional fee)", category: "parking", learned: "2026-06-12", source: "Website" },
           { text: "Short-term rentals available", category: "building", learned: "2026-06-12", source: "Website" },
           { text: "Promo: 1 month free on 1BR. Month 1 FREE, months 2–8 at market−(market/7), reverts to full market after month 8.", category: "promo", learned: "2026-06-11", source: "Matt" }
         ],
-        amenities: { ac: true, laundry_insuite: true, laundry_shared: true, dishwasher: true, parking_indoor: true, parking_outdoor: true, pool: null, pet: true, balcony: true, river_view: true, all_inclusive: false, fitness: true },
+        amenities: { ac: true, laundry_insuite: true, laundry_shared: true, dishwasher: true, parking_indoor: false, parking_outdoor: true, pool: null, pet: true, balcony: true, river_view: true, all_inclusive: false, fitness: true },
         community: [],
         promos: ["1BR: month 1 FREE + months 2–8 at (market − market/7), then reverts to market"],
         promo_formula: { type: "months_free", months_free: 1, divisor: 7, incentive_window: 8 }
@@ -587,10 +588,11 @@ window._snap = {
           { text: "Ottawa River views, near Andrew Haydon Park and Britannia Beach", category: "building", learned: "2026-06-12", source: "Website" },
           { text: "Eco-friendly building with green initiatives — good angle for eco-conscious prospects", category: "building", learned: "2026-06-12", source: "Website" },
           { text: "Heat and water included, hydro extra", category: "utilities", learned: "2026-06-12", source: "Website" },
-          { text: "Indoor and outdoor parking available (additional fee)", category: "parking", learned: "2026-06-12", source: "Website" },
+          { text: "Indoor parking: WAITLIST — up to 1 year wait. Do NOT offer indoor parking to prospects right now. Outdoor parking only.", category: "parking", learned: "2026-06-12", source: "Matt (internal)" },
+          { text: "Outdoor parking available (additional fee)", category: "parking", learned: "2026-06-12", source: "Website" },
           { text: "No promo — apply 8-month rental discount: market/8 = monthly discount for 8 months, then reverts.", category: "promo", learned: "2026-06-12", source: "Matt" }
         ],
-        amenities: { ac: true, laundry_insuite: null, laundry_shared: true, dishwasher: true, parking_indoor: true, parking_outdoor: true, pool: null, pet: true, balcony: true, river_view: true, all_inclusive: false, fitness: true },
+        amenities: { ac: true, laundry_insuite: null, laundry_shared: true, dishwasher: true, parking_indoor: false, parking_outdoor: true, pool: null, pet: true, balcony: true, river_view: true, all_inclusive: false, fitness: true },
         community: [],
         promos: ["8-month rental discount: market/8 per month for 8 months"],
         promo_formula: { type: "no_promo", divisor: 8 }
@@ -2210,7 +2212,6 @@ function renderPropertyKnowledge(query) {
           <div class="fp-card">
             <div class="fp-name">${escH(fp.name)}</div>
             <div class="fp-detail">${fp.br===0?'Studio':fp.br+'BR'}${fp.sqft?' · '+fp.sqft+' sqft':''}</div>
-            ${fp.from?`<div class="fp-price">from $${fp.from.toLocaleString()}/mo</div>`:''}
           </div>`).join('')}
         </div>
       </div>` : '';
