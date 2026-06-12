@@ -397,9 +397,12 @@ input,select,textarea{font-family:inherit;font-size:14px}
         <div class="import-bar-text">Today's Inventory</div>
         <div class="import-bar-sub" id="import-status">No inventory loaded — drag xlsx here or click Import</div>
       </div>
-      <button class="import-bar-btn" onclick="event.stopPropagation();document.getElementById('inv-file').click()">Import xlsx</button>
+      <div style="display:flex;gap:8px;flex-shrink:0">
+        <button class="import-bar-btn" onclick="event.stopPropagation();document.getElementById('inv-file').click()">Import xlsx</button>
+        <button class="import-bar-btn" style="border-color:var(--red);color:var(--red);background:var(--red-light)" onclick="event.stopPropagation();clearInventory()">Clear</button>
+      </div>
     </div>
-    <input type="file" id="inv-file" accept=".xlsx,.xls" multiple style="display:none" onchange="importInventoryFiles(this.files)">
+    <input type="file" id="inv-file" accept=".xlsx,.xls" multiple style="display:none" onchange="importInventoryFiles(this.files);this.value=''">
 
     <input class="brain-search" type="text" id="brain-search" placeholder="Search units or properties… e.g. Orion 0822 or Cobalt" oninput="renderBrain()">
 
@@ -1966,9 +1969,9 @@ function updateImportStatus() {
   if (D.inventory.loaded_at) {
     const count = (D.inventory.units||[]).length;
     const holds = (D.inventory.holds||[]).length;
-    const fc = D.inventory.file_count || 1;
-    const names = (D.inventory.file_names||[]).join(', ');
-    el.textContent = `✓ ${names || fc+' file'+(fc>1?'s':'')} · ${fmtDate(D.inventory.loaded_at)} · ${count} units${holds?' · '+holds+' holds':''}`;
+    const names = D.inventory.file_names || [];
+    const nameStr = names.length ? names.join(' · ') : '1 file';
+    el.textContent = `✓ ${nameStr} · ${fmtDate(D.inventory.loaded_at)} · ${count} units${holds?' · '+holds+' holds':''}`;
     el.style.color = 'var(--green)';
   } else {
     el.textContent = 'No inventory loaded — drag xlsx here or click Import';
@@ -1987,9 +1990,16 @@ function importInventoryFiles(files) {
   const fileArr = Array.from(files).filter(f => /\.(xlsx|xls)$/i.test(f.name));
   if (!fileArr.length) return;
   document.getElementById('import-status').textContent = `Importing ${fileArr.length} file${fileArr.length>1?'s':''}…`;
-  const allUnits = {};
+
+  // Start from existing accumulated units
+  const merged = {};
+  (D.inventory.units || []).forEach(u => { merged[u.property+'::'+u.unit] = u; });
+  const existingNames = new Set(D.inventory.file_names || []);
+
   let done = 0;
+  const newNames = [];
   fileArr.forEach(file => {
+    const cleanName = file.name.replace(/\.(xlsx|xls)$/i,'');
     const reader = new FileReader();
     reader.onload = function(e) {
       try {
@@ -1997,39 +2007,50 @@ function importInventoryFiles(files) {
         const ws = wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
         rows.forEach(row => {
-          const prop = row['Property Name'] || row['Property'] || '';
-          const unit = String(row['Unit'] || '');
-          const br = parseInt(row['BR'] || row['Bedrooms'] || 0);
-          const rent = parseFloat(String(row['Market Rent']||'').replace(/[^0-9.]/g,'')) || 0;
-          const occ = row['Occ.'] || row['Occ'] || '';
+          const prop = row['Property Name'] || row['Property'] || row['property'] || '';
+          const unit = String(row['Unit'] || row['unit'] || row['UNIT'] || '');
+          const br = parseInt(row['BR'] || row['Bedrooms'] || row['Bedroom'] || row['BRs'] || 0);
+          const rent = parseFloat(String(row['Market Rent'] || row['MarketRent'] || row['Mkt Rent'] || row['Rent'] || '').replace(/[^0-9.]/g,'')) || 0;
+          const occ = row['Occ.'] || row['Occ'] || row['Status'] || '';
           let dateAvail = null;
-          const rawDate = row['Date Available'];
+          const rawDate = row['Date Available'] || row['Available'] || row['Avail Date'] || '';
           if (rawDate && rawDate !== '') {
             if (rawDate instanceof Date) dateAvail = rawDate.toISOString().slice(0,10);
             else if (typeof rawDate === 'string' && rawDate.trim()) dateAvail = rawDate.trim();
           }
-          const daysVac = parseInt(row['Days Vac.'] || row['Days Vac'] || 0);
+          const daysVac = parseInt(row['Days Vac.'] || row['Days Vac'] || row['Days Vacant'] || 0);
           if (prop && unit && rent > 0) {
-            allUnits[prop + '::' + unit] = { property: prop, unit, br, rent, date_avail: dateAvail, occ, days_vac: daysVac };
+            merged[prop+'::'+unit] = { property: prop, unit, br, rent, date_avail: dateAvail, occ, days_vac: daysVac };
           }
         });
+        if (!existingNames.has(cleanName)) newNames.push(cleanName);
       } catch(err) { /* skip bad file */ }
       done++;
       if (done === fileArr.length) {
-        const units = Object.values(allUnits);
+        const units = Object.values(merged);
+        const allNames = [...existingNames, ...newNames];
         D.inventory.units = units;
         D.inventory.loaded_at = new Date().toISOString().slice(0,10);
-        D.inventory.file_count = fileArr.length;
-        D.inventory.file_names = fileArr.map(f => f.name.replace(/\.(xlsx|xls)$/i,''));
+        D.inventory.file_names = allNames;
         saveData();
         populatePropFilter();
-        document.getElementById('import-status').textContent = `✓ ${fileArr.length} file${fileArr.length>1?'s':''} imported · ${units.length} units`;
+        updateImportStatus();
         renderFind();
         renderBrain();
       }
     };
     reader.readAsArrayBuffer(file);
   });
+}
+
+function clearInventory() {
+  if (!confirm('Clear all inventory data?')) return;
+  D.inventory = { loaded_at: null, units: [], holds: [], non_rev: [], file_names: [] };
+  saveData();
+  populatePropFilter();
+  updateImportStatus();
+  renderFind();
+  renderBrain();
 }
 
 /* ══════════════════════════════════════════════════════
