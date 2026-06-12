@@ -1536,9 +1536,9 @@ function openUnitModal(key) {
   const inv = (D.inventory.units || []).find(u => u.property === property && u.unit === unit);
   const rent = inv?.rent || null;
   const br = inv?.br ?? (uk.br ?? null);
-  const daysVac = inv?.days_vac || 0;
   const dateAvail = inv?.date_avail || null;
   const occ = inv?.occ || '';
+  const daysVac = inv ? daysVacant(inv) : 0;
 
   document.getElementById('unit-modal-prop').textContent = property;
   document.getElementById('unit-modal-id').textContent = formatUnitDisplay(property, unit);
@@ -1546,8 +1546,9 @@ function openUnitModal(key) {
   // Sub-line: BR + occ status
   const brStr = br !== null ? brlabel(br) : '';
   const occStr = isVacant(inv||{}) ? 'Vacant' : isNotice(inv||{}) ? 'On Notice' : occ || '';
-  const availStr = dateAvail ? ' · Available ' + fmtDate(dateAvail) : '';
-  const subParts = [brStr, occStr ? occStr + availStr : '', daysVac > 0 ? daysVac + ' days vacant' : ''].filter(Boolean);
+  const availStr = dateAvail ? ' since ' + fmtDate(dateAvail) : '';
+  const daysStr = daysVac > 0 ? `${daysVac}d vacant` : '';
+  const subParts = [brStr, occStr ? occStr + availStr : '', daysStr].filter(Boolean);
   document.getElementById('unit-modal-sub').textContent = subParts.join(' · ');
 
   // ── Promo block ──
@@ -1818,11 +1819,28 @@ function enrichUnit(u) {
 
 function isVacant(u) {
   const o = (u.occ || '').toLowerCase().trim();
-  return o === 'v' || o === 'vacant' || o === 'vac';
+  if (o === 'v' || o === 'vacant' || o === 'vac') return true;
+  if (o === 'o' || o === 'occupied') return false;
+  if (isNotice(u)) return false;
+  // No occ column — infer from date_avail: past date = vacant
+  if (!o && u.date_avail) {
+    const d = parseLocalDate(u.date_avail);
+    if (d) { const today = new Date(); today.setHours(0,0,0,0); return d <= today; }
+  }
+  return false;
 }
 function isNotice(u) {
   const o = (u.occ || '').toLowerCase().trim();
   return o === 'n' || o === 'notice' || o === 'on notice' || o === 'ntv' || o === 'occupied - on notice';
+}
+function daysVacant(u) {
+  if (!isVacant(u)) return 0;
+  if (u.days_vac > 0) return u.days_vac;
+  if (u.date_avail) {
+    const d = parseLocalDate(u.date_avail);
+    if (d) { const today = new Date(); today.setHours(0,0,0,0); return Math.max(0, Math.floor((today - d) / 86400000)); }
+  }
+  return 0;
 }
 function applyFilters(units) {
   const rent = parseInt(document.getElementById('filter-rent')?.value) || null;
@@ -1863,19 +1881,24 @@ function amnBadge(label, val) {
 
 function renderUnitCard(u) {
   const hold = u.holdInfo;
-  const days = u.date_avail ? daysUntil(u.date_avail) : null;
-  const occLower = (u.occ || '').toLowerCase().trim();
+  const daysOut = u.date_avail ? daysUntil(u.date_avail) : null;
+  const dvac = daysVacant(u);
   let statusHtml = '';
   if (hold) {
     statusHtml = `<span class="status-hold">Hold · ${escH(hold.held_by)}</span>`;
-  } else if (occLower === 'n' || occLower === 'notice') {
+  } else if (isNotice(u)) {
     statusHtml = `<span class="status-notice">On Notice</span>`;
-  } else if (occLower === 'eviction') {
+  } else if ((u.occ||'').toLowerCase().trim() === 'eviction') {
     statusHtml = `<span class="status-eviction">Eviction</span>`;
-  } else {
-    statusHtml = `<span class="status-past">Vacant</span>`;
+  } else if (isVacant(u)) {
+    const dvacLabel = dvac > 0 ? `<span style="font-size:11px;opacity:.75;margin-left:4px">${dvac}d</span>` : '';
+    statusHtml = `<span class="status-past">Vacant${dvacLabel}</span>`;
   }
-  const availText = u.date_avail ? `Avail ${fmtDate(u.date_avail)}${days !== null && days <= 30 ? ` · <b style="color:var(--amber)">${days}d</b>` : ''}` : 'Avail TBD';
+  const availText = u.date_avail
+    ? (daysOut !== null && daysOut <= 0
+        ? `Since ${fmtDate(u.date_avail)}`
+        : `Avail ${fmtDate(u.date_avail)}${daysOut !== null && daysOut <= 30 ? ` · <b style="color:var(--amber)">${daysOut}d</b>` : ''}`)
+    : 'Avail TBD';
   const factsPreview = u.facts.length > 0 ? `<div class="unit-notes-preview">${escH(u.facts.slice(0,2).join(' · '))}</div>` : '';
   const allIn = u.all_inclusive === true ? `<span class="amn-badge amn-yes">💡 All-in</span>` : '';
   const ukey = escAttr(unitKey(u.property, u.unit));
@@ -2168,12 +2191,17 @@ function renderPropInventory(name) {
     return;
   }
   el.innerHTML = units.map(u => {
-    const promo = calcPromo(name, u.rent, u.br, u.days_vac);
+    const dvac = daysVacant(u);
+    const promo = calcPromo(name, u.rent, u.br, dvac);
     const promoEff = promo?.effective ? promo.effective : null;
     const promoStr = promoEff ? `→ $${promoEff.toLocaleString('en-CA',{minimumFractionDigits:2,maximumFractionDigits:2})}` : '';
     const occClass = isVacant(u) ? 'vacant' : isNotice(u) ? 'notice' : '';
-    const occLabel = isVacant(u) ? 'Vacant' : isNotice(u) ? 'Notice' : '';
-    const availStr = u.date_avail ? fmtDate(u.date_avail) : '';
+    const daysOut = u.date_avail ? daysUntil(u.date_avail) : null;
+    const availStr = u.date_avail
+      ? (daysOut !== null && daysOut <= 0 ? `Since ${fmtDate(u.date_avail)}` : fmtDate(u.date_avail))
+      : '';
+    const dvacStr = dvac > 0 ? `${dvac}d` : '';
+    const occLabel = isVacant(u) ? (dvacStr || 'Vacant') : isNotice(u) ? 'Notice' : '';
     const key = unitKey(name, u.unit);
     return `<div class="prop-inv-row" onclick="openUnitModal('${escAttr(key)}')">
       <span class="prop-inv-unit">${escH(formatUnitDisplay(name, u.unit))}</span>
@@ -3036,17 +3064,23 @@ function renderPropertyDetail(name) {
 
   // Unit rows
   const unitsHtml = units.length ? units.map(u => {
-    const promo = calcPromo(name, u.rent, u.br, u.days_vac);
+    const dvac = daysVacant(u);
+    const promo = calcPromo(name, u.rent, u.br, dvac);
     const promoStr = promo?.effective ? `→ $${(Math.round(promo.effective*100)/100).toLocaleString('en-CA',{minimumFractionDigits:2,maximumFractionDigits:2})}/mo` : '';
     const occClass = isVacant(u) ? 'vacant' : isNotice(u) ? 'notice' : '';
-    const occLabel = isVacant(u) ? 'Vacant' : isNotice(u) ? 'Notice' : '';
+    const daysOut = u.date_avail ? daysUntil(u.date_avail) : null;
+    const availStr = u.date_avail
+      ? (daysOut !== null && daysOut <= 0 ? `Since ${fmtDate(u.date_avail)}` : fmtDate(u.date_avail))
+      : '';
+    const dvacStr = dvac > 0 ? `${dvac}d` : '';
+    const occLabel = isVacant(u) ? (dvacStr || 'Vacant') : isNotice(u) ? 'Notice' : '';
     const key = unitKey(name, u.unit);
     return `<div class="vd-unit-row" onclick="openUnitModal('${escAttr(key)}')">
       <span class="vdu-unit">${escH(formatUnitDisplay(name, u.unit))}</span>
       <span class="vdu-br">${brlabel(u.br)}</span>
       <span class="vdu-rent">$${u.rent.toLocaleString()}</span>
       <span class="vdu-promo">${promoStr}</span>
-      <span class="vdu-avail">${u.date_avail ? fmtDate(u.date_avail) : ''}</span>
+      <span class="vdu-avail">${availStr}</span>
       ${occLabel ? `<span class="vdu-occ ${occClass}">${occLabel}</span>` : ''}
     </div>`;
   }).join('') : `<div class="vd-empty">No units match — try changing the filters above.</div>`;
