@@ -402,6 +402,56 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .add-fact-input{flex:1;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:7px 10px;font-size:13px;color:var(--ink)}
 .add-fact-input:focus{outline:none;border-color:var(--blue)}
 
+/* ══ VILLAGE TAB ══ */
+.village-header{padding:16px 16px 0;display:flex;align-items:center;justify-content:space-between}
+.village-section-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--ink4);padding:16px 16px 6px}
+.village-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding:0 16px 16px}
+.village-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 14px 12px;cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s;position:relative;overflow:hidden}
+.village-card:hover{transform:translateY(-2px);box-shadow:var(--sh);border-color:var(--border2)}
+.village-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--vc-color,var(--primary))}
+.vc-name{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:2px;line-height:1.2}
+.vc-addr{font-size:10px;color:var(--ink4);margin-bottom:8px;line-height:1.3}
+.vc-types{font-size:10px;color:var(--ink3);margin-bottom:8px}
+.vc-stats{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px}
+.vc-stat{font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px}
+.vc-stat.vacant{background:rgba(74,222,128,.15);color:var(--green)}
+.vc-stat.notice{background:rgba(252,211,77,.12);color:var(--amber)}
+.vc-stat.none{background:var(--surface2);color:var(--ink4)}
+.vc-promo{font-size:10px;color:var(--navy);font-weight:600}
+/* Village detail panel */
+.village-detail{padding:0 0 24px}
+.vd-back{display:flex;align-items:center;gap:6px;padding:12px 16px;font-size:13px;font-weight:600;color:var(--primary);cursor:pointer;background:none;border:none;border-bottom:1px solid var(--border);width:100%;text-align:left}
+.vd-back:hover{background:var(--surface2)}
+.vd-hero{padding:16px;border-bottom:1px solid var(--border)}
+.vd-hero-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.vd-prop-name{font-size:22px;font-weight:800;color:var(--ink)}
+.vd-prop-addr{font-size:12px;color:var(--ink4);margin-top:2px}
+.vd-amn-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.vd-amn-chip{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600}
+.vd-amn-yes{background:rgba(74,222,128,.12);color:var(--green)}
+.vd-amn-no{background:rgba(252,129,129,.12);color:var(--red)}
+.vd-amn-unk{background:var(--surface2);color:var(--ink4)}
+.vd-filters{display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.vd-filter{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:5px 10px;font-size:12px;color:var(--ink2);background:var(--surface);cursor:pointer}
+.vd-unit-list{padding:0 16px}
+.vd-unit-row{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.vd-unit-row:hover{background:var(--surface2);margin:0 -16px;padding:10px 16px}
+.vd-unit-row:last-child{border-bottom:none}
+.vdu-unit{font-size:13px;font-weight:700;color:var(--navy);min-width:60px}
+.vdu-br{font-size:11px;color:var(--ink4);min-width:42px}
+.vdu-rent{font-size:12px;font-weight:600;color:var(--ink2);min-width:70px}
+.vdu-promo{font-size:11px;color:var(--green);flex:1}
+.vdu-avail{font-size:11px;color:var(--ink4);white-space:nowrap}
+.vdu-occ{font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;flex-shrink:0}
+.vdu-occ.vacant{background:rgba(74,222,128,.15);color:var(--green)}
+.vdu-occ.notice{background:rgba(252,211,77,.15);color:var(--amber)}
+.vd-empty{text-align:center;padding:32px 16px;color:var(--ink4);font-size:13px}
+.vd-floor-plans{padding:12px 16px 0;border-top:1px solid var(--border)}
+.vd-fp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;margin-top:8px}
+.vd-fp-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-xs);padding:8px 10px}
+.vd-fp-name{font-size:10px;font-weight:600;color:var(--ink4);margin-bottom:2px}
+.vd-fp-detail{font-size:12px;color:var(--ink2)}
+
 /* ── EMPTY STATE ── */
 .empty{text-align:center;padding:40px 20px;color:var(--ink4)}
 .empty-icon{font-size:36px;margin-bottom:8px}
@@ -426,7 +476,10 @@ input,select,textarea{font-family:inherit;font-size:14px}
 </header>
 
 <nav class="tab-bar">
-  <button class="tab-btn active" data-tab="find" onclick="switchTab('find')">
+  <button class="tab-btn active" data-tab="village" onclick="switchTab('village')">
+    <span class="tab-icon">🏘</span>Village
+  </button>
+  <button class="tab-btn" data-tab="find" onclick="switchTab('find')">
     <span class="tab-icon">🔍</span>Find
   </button>
   <button class="tab-btn" data-tab="pipeline" onclick="switchTab('pipeline')">
@@ -441,8 +494,14 @@ input,select,textarea{font-family:inherit;font-size:14px}
 </nav>
 
 <main>
+  <!-- VILLAGE -->
+  <section id="tab-village" class="tab-content active">
+    <div id="village-grid-view"></div>
+    <div id="village-detail-view" style="display:none"></div>
+  </section>
+
   <!-- FIND -->
-  <section id="tab-find" class="tab-content active">
+  <section id="tab-find" class="tab-content">
     <div class="find-filters">
       <div class="filter-row">
         <span class="filter-label">Bedrooms</span>
@@ -2826,10 +2885,206 @@ function downloadSnapshot() {
 /* ══════════════════════════════════════════════════════
    TAB SWITCHING
 ══════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════
+   VILLAGE TAB
+══════════════════════════════════════════════════════ */
+const VILLAGE_CLUSTERS = [
+  {
+    label: 'Woodridge Towers',
+    color: '#3B82F6',
+    properties: ['Jasper','Orion','Mica','Coral','Cobalt','Opal','Sandstone']
+  },
+  {
+    label: 'Deschênes Court',
+    color: '#8B5CF6',
+    properties: ['Deschênes Court Moodie','Deschênes Court Franklin','Deschênes Court Haydon']
+  },
+  {
+    label: 'Townhome Living',
+    color: '#10B981',
+    properties: ['Townhomes','Garden Homes','Executive Garden Homes']
+  }
+];
+
+function renderVillage() {
+  closePropertyDetail(true);
+  const gv = document.getElementById('village-grid-view');
+  if (!gv) return;
+  const inv = D.inventory.units || [];
+  let html = '';
+  VILLAGE_CLUSTERS.forEach(cluster => {
+    html += `<div class="village-section-label">${cluster.label}</div>
+    <div class="village-grid">`;
+    cluster.properties.forEach(name => {
+      const pk = D.knowledge.properties[name] || {};
+      const addr = pk.address || '';
+      const fps = pk.floor_plans || [];
+      const brSet = new Set(fps.map(f => f.br));
+      const brTypes = [...brSet].sort().map(b => b===0?'Studio':b+'BR').join(' · ') || '—';
+      const propUnits = inv.filter(u => u.property === name);
+      const vacantCount = propUnits.filter(u => isVacant(u)).length;
+      const noticeCount = propUnits.filter(u => isNotice(u)).length;
+      const pf = pk.promo_formula;
+      let promoStr = '';
+      if (pf) {
+        if (pf.type === 'months_free') promoStr = `${pf.months_free} mo free`;
+        else if (pf.type === 'months_free_by_bedrooms') promoStr = '1 mo free on 1BR';
+        else if (pf.type === 'no_promo') promoStr = '8-mo discount';
+      }
+      const statsHtml = propUnits.length === 0
+        ? `<span class="vc-stat none">No inventory</span>`
+        : [
+            vacantCount > 0 ? `<span class="vc-stat vacant">${vacantCount} vacant</span>` : '',
+            noticeCount > 0 ? `<span class="vc-stat notice">${noticeCount} notice</span>` : ''
+          ].filter(Boolean).join('') || `<span class="vc-stat none">All occupied</span>`;
+      html += `
+        <div class="village-card" style="--vc-color:${cluster.color}" onclick="openPropertyDetail('${escAttr(name)}')">
+          <div class="vc-name">${escH(name)}</div>
+          <div class="vc-addr">${escH(addr)}</div>
+          <div class="vc-types">${brTypes}</div>
+          <div class="vc-stats">${statsHtml}</div>
+          ${promoStr ? `<div class="vc-promo">🎁 ${promoStr}</div>` : ''}
+        </div>`;
+    });
+    html += `</div>`;
+  });
+  gv.innerHTML = html;
+}
+
+function openPropertyDetail(name) {
+  const gv = document.getElementById('village-grid-view');
+  const dv = document.getElementById('village-detail-view');
+  if (!gv || !dv) return;
+  gv.style.display = 'none';
+  dv.style.display = 'block';
+  renderPropertyDetail(name);
+}
+
+function closePropertyDetail(silent) {
+  const gv = document.getElementById('village-grid-view');
+  const dv = document.getElementById('village-detail-view');
+  if (!gv || !dv) return;
+  gv.style.display = '';
+  dv.style.display = 'none';
+  if (!silent) renderVillage();
+}
+
+const _vdFilters = {};
+function renderPropertyDetail(name) {
+  const dv = document.getElementById('village-detail-view');
+  if (!dv) return;
+  if (!_vdFilters[name]) _vdFilters[name] = { occ: 'vacant', br: '', month: '' };
+  const f = _vdFilters[name];
+  const pk = D.knowledge.properties[name] || {};
+  const fps = pk.floor_plans || [];
+  const amns = pk.amenities || {};
+  const inv = D.inventory.units || [];
+
+  // Amenity chips for header
+  const amnChips = Object.entries(AMN_LABELS).map(([k, label]) => {
+    const val = amns[k];
+    if (val === null || val === undefined) return '';
+    const cls = val === true ? 'vd-amn-yes' : 'vd-amn-no';
+    const icon = AMN_ICONS[k] || '';
+    return `<span class="vd-amn-chip ${cls}">${icon} ${val ? '' : 'No '}${label}</span>`;
+  }).filter(Boolean).join('');
+
+  // Filter units
+  let units = inv.filter(u => u.property === name);
+  if (f.occ === 'vacant') units = units.filter(u => isVacant(u));
+  else if (f.occ === 'notice') units = units.filter(u => isNotice(u));
+  if (f.br !== '') units = units.filter(u => String(u.br) === f.br);
+  if (f.month) units = units.filter(u => u.date_avail && u.date_avail.slice(0,7) === f.month);
+  units.sort((a,b) => {
+    const da = a.date_avail ? new Date(a.date_avail) : new Date('2099-01-01');
+    const db = b.date_avail ? new Date(b.date_avail) : new Date('2099-01-01');
+    return da - db;
+  });
+
+  // Month options from all units for this property
+  const allPropUnits = inv.filter(u => u.property === name);
+  const months = [...new Set(allPropUnits.filter(u=>u.date_avail).map(u=>u.date_avail.slice(0,7)))].sort();
+  const monthOptions = months.map(m => {
+    const [y,mo] = m.split('-');
+    const label = new Date(+y,+mo-1).toLocaleDateString('en-CA',{month:'short',year:'numeric'});
+    return `<option value="${m}"${f.month===m?' selected':''}>${label}</option>`;
+  }).join('');
+
+  // Floor plans section
+  const fpHtml = fps.length ? `
+    <div class="vd-floor-plans">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--ink4);margin-bottom:6px">Floor Plans</div>
+      <div class="vd-fp-grid">${fps.map(fp=>`
+        <div class="vd-fp-card">
+          <div class="vd-fp-name">${escH(fp.name)}</div>
+          <div class="vd-fp-detail">${fp.br===0?'Studio':fp.br+'BR'}${fp.sqft?' · '+fp.sqft+' sqft':''}</div>
+        </div>`).join('')}
+      </div>
+    </div>` : '';
+
+  // Unit rows
+  const unitsHtml = units.length ? units.map(u => {
+    const promo = calcPromo(name, u.rent, u.br, u.days_vac);
+    const promoStr = promo?.effective ? `→ $${(Math.round(promo.effective*100)/100).toLocaleString('en-CA',{minimumFractionDigits:2,maximumFractionDigits:2})}/mo` : '';
+    const occClass = isVacant(u) ? 'vacant' : isNotice(u) ? 'notice' : '';
+    const occLabel = isVacant(u) ? 'Vacant' : isNotice(u) ? 'Notice' : '';
+    const key = unitKey(name, u.unit);
+    return `<div class="vd-unit-row" onclick="openUnitModal('${escAttr(key)}')">
+      <span class="vdu-unit">${escH(formatUnitDisplay(name, u.unit))}</span>
+      <span class="vdu-br">${brlabel(u.br)}</span>
+      <span class="vdu-rent">$${u.rent.toLocaleString()}</span>
+      <span class="vdu-promo">${promoStr}</span>
+      <span class="vdu-avail">${u.date_avail ? fmtDate(u.date_avail) : ''}</span>
+      ${occLabel ? `<span class="vdu-occ ${occClass}">${occLabel}</span>` : ''}
+    </div>`;
+  }).join('') : `<div class="vd-empty">No units match — try changing the filters above.</div>`;
+
+  const vacantTotal = allPropUnits.filter(u => isVacant(u)).length;
+  const noticeTotal = allPropUnits.filter(u => isNotice(u)).length;
+
+  dv.innerHTML = `
+    <div class="village-detail">
+      <button class="vd-back" onclick="closePropertyDetail()">← All Properties</button>
+      <div class="vd-hero">
+        <div class="vd-hero-top">
+          <div>
+            <div class="vd-prop-name">${escH(name)}</div>
+            ${pk.address ? `<div class="vd-prop-addr">${escH(pk.address)}</div>` : ''}
+          </div>
+          <div style="text-align:right;font-size:11px">
+            ${vacantTotal > 0 ? `<div style="color:var(--green);font-weight:700">${vacantTotal} vacant</div>` : ''}
+            ${noticeTotal > 0 ? `<div style="color:var(--amber);font-weight:600">${noticeTotal} notice</div>` : ''}
+          </div>
+        </div>
+        ${amnChips ? `<div class="vd-amn-row">${amnChips}</div>` : ''}
+      </div>
+      <div class="vd-filters">
+        <select class="vd-filter" onchange="_vdFilters['${escAttr(name)}'].occ=this.value;renderPropertyDetail('${escAttr(name)}')">
+          <option value="vacant"${f.occ==='vacant'?' selected':''}>Vacant</option>
+          <option value="notice"${f.occ==='notice'?' selected':''}>On Notice</option>
+          <option value="all"${f.occ==='all'?' selected':''}>All</option>
+        </select>
+        <select class="vd-filter" onchange="_vdFilters['${escAttr(name)}'].br=this.value;renderPropertyDetail('${escAttr(name)}')">
+          <option value=""${f.br===''?' selected':''}>All BRs</option>
+          <option value="0"${f.br==='0'?' selected':''}>Studio</option>
+          <option value="1"${f.br==='1'?' selected':''}>1 BR</option>
+          <option value="2"${f.br==='2'?' selected':''}>2 BR</option>
+          <option value="3"${f.br==='3'?' selected':''}>3+ BR</option>
+        </select>
+        ${months.length > 1 ? `<select class="vd-filter" onchange="_vdFilters['${escAttr(name)}'].month=this.value;renderPropertyDetail('${escAttr(name)}')">
+          <option value="">Any month</option>${monthOptions}
+        </select>` : ''}
+      </div>
+      <div class="vd-unit-list">${unitsHtml}</div>
+      ${fpHtml}
+    </div>`;
+}
+
 function switchTab(name) {
   document.querySelectorAll('.tab-content').forEach(el => el.classList.toggle('active', el.id === 'tab-'+name));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
-  if (name === 'find') renderFind();
+  if (name === 'village') renderVillage();
+  else if (name === 'find') renderFind();
   else if (name === 'pipeline') renderPipeline();
   else if (name === 'debrief') { renderDebriefHistory(); }
   else if (name === 'brain') renderBrain();
@@ -2898,6 +3153,7 @@ function init() {
   // Populate prop filter
   populatePropFilter();
   // Initial render
+  renderVillage();
   renderFind();
 }
 
