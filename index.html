@@ -265,20 +265,46 @@ input,select,textarea{font-family:inherit;font-size:14px}
 /* ── BRAIN TAB ── */
 .brain-search{width:100%;border:1.5px solid var(--border2);border-radius:var(--r-sm);padding:9px 12px;font-size:14px;color:var(--ink);background:var(--surface);margin-bottom:14px}
 .brain-search:focus{outline:none;border-color:var(--blue)}
-.prop-knowledge-card{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);margin-bottom:10px;overflow:hidden}
-.prop-knowledge-header{padding:13px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.prop-knowledge-card{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);margin-bottom:10px;overflow:hidden;box-shadow:var(--sh-sm)}
+.prop-knowledge-header{padding:13px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;gap:10px}
 .prop-knowledge-header:hover{background:var(--surface2)}
 .prop-name{font-size:14px;font-weight:600;color:var(--ink)}
-.prop-meta{font-size:11px;color:var(--ink4)}
-.prop-chevron{font-size:12px;color:var(--ink4);transition:transform .2s}
+.prop-address{font-size:11px;color:var(--ink4);margin-top:1px}
+.prop-header-chips{display:flex;gap:5px;flex-wrap:wrap;flex:1;justify-content:flex-end}
+.prop-chevron{font-size:12px;color:var(--ink4);transition:transform .2s;flex-shrink:0}
 .prop-chevron.open{transform:rotate(180deg)}
-.prop-knowledge-body{display:none;padding:0 16px 14px;border-top:1px solid var(--border)}
+.prop-knowledge-body{display:none;border-top:1px solid var(--border)}
 .prop-knowledge-body.open{display:block}
-.prop-fact{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)}
+.prop-body-section{padding:12px 16px;border-bottom:1px solid var(--border)}
+.prop-body-section:last-child{border-bottom:none}
+.prop-section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--ink4);margin-bottom:8px}
+/* Amenity toggles */
+.amn-toggle-grid{display:flex;flex-wrap:wrap;gap:6px}
+.amn-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid;transition:all .15s;user-select:none}
+.amn-chip-yes{background:var(--green-light);color:var(--green);border-color:var(--green-border)}
+.amn-chip-no{background:var(--red-light);color:var(--red);border-color:var(--red-border);text-decoration:line-through;opacity:.8}
+.amn-chip-unk{background:var(--surface2);color:var(--ink4);border-color:var(--border2)}
+.amn-chip:hover{transform:scale(1.05)}
+/* Floor plans */
+.fp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px}
+.fp-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-xs);padding:8px 10px}
+.fp-name{font-size:11px;font-weight:600;color:var(--ink3);margin-bottom:2px}
+.fp-detail{font-size:12px;color:var(--ink2)}
+.fp-price{font-size:12px;font-weight:600;color:var(--navy);margin-top:2px}
+/* Facts */
+.prop-fact{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);group}
 .prop-fact:last-child{border-bottom:none}
 .prop-fact-icon{font-size:13px;flex-shrink:0;margin-top:1px}
-.prop-fact-text{font-size:13px;color:var(--ink2);flex:1}
+.prop-fact-content{flex:1;min-width:0}
+.prop-fact-text{font-size:13px;color:var(--ink2)}
+.prop-fact-text.editing{display:none}
+.prop-fact-edit-input{width:100%;border:1.5px solid var(--blue);border-radius:var(--r-xs);padding:4px 7px;font-size:13px;font-family:inherit;color:var(--ink);background:var(--surface)}
 .prop-fact-meta{font-size:11px;color:var(--ink4);margin-top:2px}
+.prop-fact-actions{display:flex;gap:2px;flex-shrink:0;opacity:0;transition:opacity .15s}
+.prop-fact:hover .prop-fact-actions{opacity:1}
+.fact-action-btn{font-size:13px;color:var(--ink4);background:none;border:none;padding:2px 4px;cursor:pointer;border-radius:4px;line-height:1}
+.fact-action-btn:hover{background:var(--surface2);color:var(--ink)}
+.fact-action-btn.del:hover{color:var(--red)}
 .fact-del{flex-shrink:0;font-size:14px;color:var(--ink4);background:none;border:none;padding:0 2px;cursor:pointer;opacity:0;transition:opacity .15s;line-height:1;margin-top:1px}
 .prop-fact:hover .fact-del,.unit-fact-row:hover .fact-del{opacity:1}
 .fact-del:hover{color:var(--red)}
@@ -516,103 +542,295 @@ window._snap = {
   knowledge: {
     properties: {
       "Orion": {
-        facts: [
-          { text: "All units have AC (central air confirmed)", category: "amenity", learned: "2026-06-11", source: "Matt confirmed during showing" },
-          { text: "All units have in-suite laundry", category: "amenity", learned: "2026-06-11", source: "Matt confirmed during showing" },
-          { text: "Promo: 1 month free on 1BR. Month 1 FREE, months 2–8 discounted at market/7 off per month, then reverts to full market.", category: "promo", learned: "2026-06-11", source: "Matt" }
+        address: "25 Woodridge Crescent",
+        floor_plans: [
+          { name: "Astral / Ursa", br: 0, sqft: "489–548", from: 1887 },
+          { name: "Eclipse / Notra / Polaris / Vega", br: 1, sqft: 646, from: 2008 },
+          { name: "Luna / Leo / Zenith / Percy", br: 2, sqft: "842–891", from: 2375 }
         ],
-        amenities: { ac: true, laundry: true },
+        facts: [
+          { text: "All units have central AC", category: "amenity", learned: "2026-06-12", source: "Website + Matt" },
+          { text: "All units have in-suite laundry (washer/dryer)", category: "amenity", learned: "2026-06-12", source: "Website + Matt" },
+          { text: "Quartz countertops, stainless steel appliances including dishwasher", category: "finishes", learned: "2026-06-12", source: "Website" },
+          { text: "Ottawa River and Andrew Haydon Park views", category: "building", learned: "2026-06-12", source: "Website" },
+          { text: "Heat and water included, hydro extra", category: "utilities", learned: "2026-06-12", source: "Website" },
+          { text: "Exclusive fitness facility in building — only Orion has this on-site", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "Indoor and outdoor parking available (additional fee)", category: "parking", learned: "2026-06-12", source: "Website" },
+          { text: "Short-term rentals available", category: "building", learned: "2026-06-12", source: "Website" },
+          { text: "Promo: 1 month free on 1BR. Month 1 FREE, months 2–8 at market−(market/7), reverts to full market after month 8.", category: "promo", learned: "2026-06-11", source: "Matt" }
+        ],
+        amenities: { ac: true, laundry_insuite: true, laundry_shared: true, dishwasher: true, parking_indoor: true, parking_outdoor: true, pool: null, pet: true, balcony: true, river_view: true, all_inclusive: false, fitness: true },
         community: [],
         promos: ["1BR: month 1 FREE + months 2–8 at (market − market/7), then reverts to market"],
         promo_formula: { type: "months_free", months_free: 1, divisor: 7, incentive_window: 8 }
       },
-      "Deschênes Court Haydon": {
-        facts: [
-          { text: "ALL-INCLUSIVE — the ONLY Accora property where heat + water + hydro are included in rent. Major selling point. Lead with this.", category: "building", learned: "2026-06-11", source: "Bobby June 11 return visit" },
-          { text: "Promo: 1 month free on 1BR. Month 1 is FREE, months 2–8 discounted at market/7 off per month, then reverts to full market after month 8.", category: "promo", learned: "2026-06-11", source: "Bobby June 11 return visit" },
-          { text: "Promo: 2 months free on 2BR — exact discount formula TBD (confirm with management before applying).", category: "promo", learned: "2026-06-11", source: "Bobby June 11 return visit" },
-          { text: "Rec centre pool and outdoor pool are free for all residents — use this strategically for prospects who mention gym/fitness", category: "community", learned: "2026-06-11", source: "Matt learned today" },
-          { text: "Also known as '230 Deschênes' or '230W' or 'Haydon'. Address: 230 Woodridge Crescent.", category: "building", learned: "2026-06-11", source: "Bobby showing" }
+      "Cobalt": {
+        address: "90 Woodridge Crescent",
+        floor_plans: [
+          { name: "Nova / Aerial", br: 0, sqft: "489–548", from: 1835 },
+          { name: "Zephyr / Glide", br: 1, sqft: 646, from: 1919 },
+          { name: "Stratos / Horizon", br: 2, sqft: "842–891", from: 2233 }
         ],
-        amenities: {},
-        community: ["Rec centre pool and outdoor pool free for residents", "ALL-INCLUSIVE — heat, water, hydro included"],
-        promos: ["1BR: month 1 FREE + months 2–8 discounted at market/7 off, then reverts to market", "2BR: 2 months free — discount formula TBD, confirm with mgmt"],
-        promo_formula: { type: "months_free_by_bedrooms", "1BR": { months_free: 1, divisor: 7, incentive_window: 8 }, "2BR": { months_free: 2, divisor: "TBD" } }
-      },
-      "Deschênes Court Franklin": {
         facts: [
-          { text: "Also known as '220 Deschênes' or '220W' or 'Franklin'. Address: 220 Woodridge Crescent.", category: "building", learned: "2026-06-11", source: "Bobby showing" },
-          { text: "No promo available as of June 2026. Can apply 8-month rental discount: market/8 = monthly discount for 8 months, then reverts to market.", category: "promo", learned: "2026-06-11", source: "Bobby showing" },
-          { text: "Rec centre pool and outdoor pool free for all residents", category: "community", learned: "2026-06-11", source: "" }
+          { text: "Central AC in all units", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "In-suite laundry in select units; shared 24hr laundry on-site for others", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "Granite countertops, stainless steel appliances including dishwasher and microwave", category: "finishes", learned: "2026-06-12", source: "Website" },
+          { text: "Ottawa River views, near Andrew Haydon Park and Britannia Beach", category: "building", learned: "2026-06-12", source: "Website" },
+          { text: "Eco-friendly building with green initiatives — good angle for eco-conscious prospects", category: "building", learned: "2026-06-12", source: "Website" },
+          { text: "Heat and water included, hydro extra", category: "utilities", learned: "2026-06-12", source: "Website" },
+          { text: "Indoor and outdoor parking available (additional fee)", category: "parking", learned: "2026-06-12", source: "Website" },
+          { text: "No promo — apply 8-month rental discount: market/8 = monthly discount for 8 months, then reverts.", category: "promo", learned: "2026-06-12", source: "Matt" }
         ],
-        amenities: {},
-        community: ["Rec centre pool and outdoor pool free for residents"],
+        amenities: { ac: true, laundry_insuite: null, laundry_shared: true, dishwasher: true, parking_indoor: true, parking_outdoor: true, pool: null, pet: true, balcony: true, river_view: true, all_inclusive: false, fitness: true },
+        community: [],
         promos: ["8-month rental discount: market/8 per month for 8 months"],
         promo_formula: { type: "no_promo", divisor: 8 }
       },
-      "Deschênes Court Moodie": {
-        facts: [
-          { text: "Rec centre pool and outdoor pool free for all residents", category: "community", learned: "2026-06-11", source: "" }
-        ],
-        amenities: {},
-        community: ["Rec centre pool and outdoor pool free for residents"],
-        promos: []
-      },
-      "Executive Garden Homes": {
-        facts: [
-          { text: "Units have a private garage and driveway — can accommodate 2 parking spots", category: "building", learned: "2026-06-09", source: "Manual entry" }
-        ],
-        amenities: { parking: true },
-        community: [],
-        promos: []
-      },
       "Coral": {
-        facts: [
-          { text: "Also known as '41 Woodridge' or '41W'. Address: 41 Woodridge Crescent.", category: "building", learned: "2026-06-11", source: "Nargess showing" },
-          { text: "8-month rental discount: market/8 = monthly discount for 8 months, then reverts to market. No other promo.", category: "promo", learned: "2026-06-11", source: "Nargess showing" }
+        address: "41 Woodridge Crescent",
+        floor_plans: [
+          { name: "Coral Jade / Garnet", br: 1, sqft: 625, from: 1920 },
+          { name: "Coral Silica", br: 2, sqft: 743, from: null },
+          { name: "Coral Juno / Azure", br: 2, sqft: 812, from: 2218 },
+          { name: "Coral Sapphire", br: 2, sqft: 863, from: null },
+          { name: "Coral Quartz", br: 3, sqft: 1035, from: null }
         ],
-        amenities: {},
+        facts: [
+          { text: "Built-in dishwasher, stainless steel appliances, granite countertops, luxury vinyl flooring", category: "finishes", learned: "2026-06-12", source: "Website" },
+          { text: "Shared 24hr on-site laundry (no in-suite)", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "Private balconies on most units, large windows", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "Heat and water included, hydro extra", category: "utilities", learned: "2026-06-12", source: "Website" },
+          { text: "Indoor and outdoor parking available (additional fee)", category: "parking", learned: "2026-06-12", source: "Website" },
+          { text: "Near Bayshore Shopping Centre, transit, parks, Ottawa River", category: "location", learned: "2026-06-12", source: "Website" },
+          { text: "Also known as '41 Woodridge' or '41W'", category: "building", learned: "2026-06-11", source: "Matt" },
+          { text: "No promo — apply 8-month rental discount: market/8 = monthly discount for 8 months, then reverts.", category: "promo", learned: "2026-06-11", source: "Matt" }
+        ],
+        amenities: { ac: null, laundry_insuite: false, laundry_shared: true, dishwasher: true, parking_indoor: true, parking_outdoor: true, pool: null, pet: true, balcony: true, river_view: null, all_inclusive: false, fitness: true },
         community: [],
         promos: ["8-month rental discount: market/8 per month for 8 months"],
         promo_formula: { type: "no_promo", divisor: 8 }
       },
       "Jasper": {
-        facts: [
-          { text: "Also known as '15 Woodridge' or '15W'. Address: 15 Woodridge Crescent.", category: "building", learned: "2026-06-11", source: "Nargess showing" },
-          { text: "8-month rental discount: market/8 = monthly discount for 8 months, then reverts to market. No other promo.", category: "promo", learned: "2026-06-11", source: "Nargess showing" }
+        address: "15 Woodridge Crescent",
+        floor_plans: [
+          { name: "Jasper Flint", br: 1, sqft: 535, from: 1775 },
+          { name: "Jasper Kindle", br: 1, sqft: 595, from: 1845 },
+          { name: "Jasper Amber / Sage / Ruby", br: 2, sqft: "726–730", from: 1975 }
         ],
-        amenities: {},
-        community: [],
-        promos: ["8-month rental discount: market/8 per month for 8 months"],
-        promo_formula: { type: "no_promo", divisor: 8 }
-      },
-      "Sandstone": {
         facts: [
-          { text: "8-month rental discount: market/8 = monthly discount for 8 months, then reverts to market. Example: Unit 109 market $1,995 → $1,745.63/mo for 8 months ($249.37 discount = $1,995/8).", category: "promo", learned: "2026-06-09", source: "Alexi showing" }
+          { text: "NO dishwasher — fridge and stove only. Important to disclose upfront.", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "Shared 24hr on-site laundry (no in-suite)", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "Luxury vinyl flooring, large windows, private balconies", category: "finishes", learned: "2026-06-12", source: "Website" },
+          { text: "Heat and water included, hydro extra", category: "utilities", learned: "2026-06-12", source: "Website" },
+          { text: "Outdoor parking only — no indoor garage option", category: "parking", learned: "2026-06-12", source: "Website" },
+          { text: "Beautiful sunset views", category: "building", learned: "2026-06-12", source: "Website" },
+          { text: "Also known as '15 Woodridge' or '15W'", category: "building", learned: "2026-06-11", source: "Matt" },
+          { text: "No promo — apply 8-month rental discount: market/8 = monthly discount for 8 months, then reverts.", category: "promo", learned: "2026-06-11", source: "Matt" }
         ],
-        amenities: {},
+        amenities: { ac: null, laundry_insuite: false, laundry_shared: true, dishwasher: false, parking_indoor: false, parking_outdoor: true, pool: null, pet: true, balcony: true, river_view: null, all_inclusive: false, fitness: true },
         community: [],
         promos: ["8-month rental discount: market/8 per month for 8 months"],
         promo_formula: { type: "no_promo", divisor: 8 }
       },
       "Mica": {
-        facts: [
-          { text: "8-month rental discount: market/8 = monthly discount for 8 months, then reverts to market. Example: Unit 303 market $1,823 → $1,595.13/mo for 8 months ($227.87 discount = $1,823/8).", category: "promo", learned: "2026-06-06", source: "Mujtaba showing" },
-          { text: "Also known as '25 Woodridge' or '25W'. Address: 25 Woodridge Crescent.", category: "building", learned: "2026-06-11", source: "Manual entry" }
+        address: "35 Woodridge Crescent",
+        floor_plans: [
+          { name: "Mica Kindle", br: 1, sqft: 595, from: 1745 },
+          { name: "Mica Flint", br: 1, sqft: 535, from: 1844 },
+          { name: "Mica Amber / Ruby / Sage", br: 2, sqft: 730, from: 1985 }
         ],
-        amenities: {},
+        facts: [
+          { text: "NO dishwasher — fridge and stove only. Important to disclose upfront.", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "Shared 24hr on-site laundry (no in-suite)", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "Luxury vinyl flooring, large windows, private balconies", category: "finishes", learned: "2026-06-12", source: "Website" },
+          { text: "Heat and water included, hydro extra", category: "utilities", learned: "2026-06-12", source: "Website" },
+          { text: "Outdoor parking only — no indoor garage option", category: "parking", learned: "2026-06-12", source: "Website" },
+          { text: "Near Andrew Haydon Park, Britannia Beach, Accora Centre", category: "location", learned: "2026-06-12", source: "Website" },
+          { text: "Also known as '35 Woodridge' or '35W'. Address: 35 Woodridge Crescent.", category: "building", learned: "2026-06-12", source: "Website" },
+          { text: "No promo — apply 8-month rental discount: market/8 = monthly discount for 8 months, then reverts.", category: "promo", learned: "2026-06-11", source: "Matt" }
+        ],
+        amenities: { ac: null, laundry_insuite: false, laundry_shared: true, dishwasher: false, parking_indoor: false, parking_outdoor: true, pool: null, pet: true, balcony: true, river_view: null, all_inclusive: false, fitness: true },
         community: [],
         promos: ["8-month rental discount: market/8 per month for 8 months"],
         promo_formula: { type: "no_promo", divisor: 8 }
       },
-      "Townhomes": {
-        facts: [
-          { text: "Vacant townhome units that have been vacant 200+ days automatically qualify for 2 months free. Check days_vacant on inventory — use this strategically as a closer.", category: "promo", learned: "2026-06-10", source: "Matt learned during Marie showing" },
-          { text: "132W8 (finished basement) has 2 months free as of June 2026 — over 200 days vacant", category: "promo", learned: "2026-06-10", source: "Marie showing" }
+      "Sandstone": {
+        address: "59 Bayshore Drive",
+        floor_plans: [
+          { name: "Gust (Studio)", br: 0, sqft: 344, from: null },
+          { name: "Carbon / Lyra", br: 1, sqft: "517–584", from: 1745 },
+          { name: "Arkose / Mistral / Hydra", br: 2, sqft: "703–744", from: 1995 },
+          { name: "Stratum", br: 3, sqft: 895, from: 2464 }
         ],
-        amenities: {},
+        facts: [
+          { text: "NO dishwasher standard — portable dishwasher available for additional fee", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "Shared 24hr on-site laundry (no in-suite)", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "LVP flooring, stainless steel fridge and stove, large windows, balconies on most units", category: "finishes", learned: "2026-06-12", source: "Website" },
+          { text: "Heat and water included, hydro extra", category: "utilities", learned: "2026-06-12", source: "Website" },
+          { text: "Widest unit range in portfolio: studio (344 sqft) through 3BR (895 sqft)", category: "building", learned: "2026-06-12", source: "Website" },
+          { text: "Near Bayshore Shopping Centre, Accora Recreation Centre, Andrew Haydon Park", category: "location", learned: "2026-06-12", source: "Website" },
+          { text: "No promo — apply 8-month rental discount: market/8 = monthly discount for 8 months, then reverts.", category: "promo", learned: "2026-06-09", source: "Matt" }
+        ],
+        amenities: { ac: null, laundry_insuite: false, laundry_shared: true, dishwasher: false, parking_indoor: null, parking_outdoor: true, pool: null, pet: true, balcony: true, river_view: null, all_inclusive: false, fitness: true },
         community: [],
+        promos: ["8-month rental discount: market/8 per month for 8 months"],
+        promo_formula: { type: "no_promo", divisor: 8 }
+      },
+      "Opal": {
+        address: "58 Bayshore Drive",
+        floor_plans: [
+          { name: "Opal Indigo (Studio)", br: 0, sqft: null, from: null },
+          { name: "Opal Garnet / Jade", br: 1, sqft: 625, from: 1845 },
+          { name: "Opal Silica", br: 2, sqft: 743, from: 2160 },
+          { name: "Opal Azure / Juno", br: 2, sqft: 812, from: 2219 },
+          { name: "Opal Sapphire", br: 2, sqft: 863, from: null },
+          { name: "Opal Quartz", br: 3, sqft: 1035, from: null }
+        ],
+        facts: [
+          { text: "Dishwasher in select units only — always confirm per unit before promising", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "Central AC in select units only — confirm per unit", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "Shared 24hr on-site laundry (no in-suite)", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "Granite countertops, stainless steel appliances, luxury flooring", category: "finishes", learned: "2026-06-12", source: "Website" },
+          { text: "Heat and water included, hydro extra", category: "utilities", learned: "2026-06-12", source: "Website" },
+          { text: "Indoor and outdoor parking available (additional fee)", category: "parking", learned: "2026-06-12", source: "Website" },
+          { text: "Near Britannia Beach, Bayshore Shopping Centre, OC Transpo, Hwy 416/417", category: "location", learned: "2026-06-12", source: "Website" },
+          { text: "No promo — apply 8-month rental discount: market/8 = monthly discount for 8 months, then reverts.", category: "promo", learned: "2026-06-12", source: "Matt" }
+        ],
+        amenities: { ac: null, laundry_insuite: false, laundry_shared: true, dishwasher: null, parking_indoor: true, parking_outdoor: true, pool: null, pet: true, balcony: true, river_view: null, all_inclusive: false, fitness: true },
+        community: [],
+        promos: ["8-month rental discount: market/8 per month for 8 months"],
+        promo_formula: { type: "no_promo", divisor: 8 }
+      },
+      "Deschênes Court Haydon": {
+        address: "230 Woodridge Crescent",
+        floor_plans: [
+          { name: "Haydon Aquarius", br: 1, sqft: 580, from: 1780 },
+          { name: "Haydon Aries", br: 1, sqft: 640, from: 1980 },
+          { name: "Haydon Pisces", br: 1, sqft: 590, from: null },
+          { name: "Haydon Taurus / Gemini", br: 2, sqft: 810, from: 2160 },
+          { name: "Haydon Auriga", br: 2, sqft: 880, from: 2331 }
+        ],
+        facts: [
+          { text: "ALL-INCLUSIVE — ONLY Accora building where heat + water + HYDRO are all included. Lead with this every time.", category: "utilities", learned: "2026-06-11", source: "Matt" },
+          { text: "Outdoor pool and courtyard — exclusive to DCH buildings (Haydon, Moodie, Franklin)", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "Fridge and stove standard; dishwasher in select units; portable available for fee", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "Sunken living rooms in some floor plans — great selling point for spacious feel", category: "building", learned: "2026-06-12", source: "Website" },
+          { text: "LVT flooring, large windows, private balconies with Ottawa River views", category: "finishes", learned: "2026-06-12", source: "Website" },
+          { text: "Oversized units compared to other Accora apartment buildings", category: "building", learned: "2026-06-12", source: "Website" },
+          { text: "Indoor parking available (additional fee)", category: "parking", learned: "2026-06-12", source: "Website" },
+          { text: "Also known as '230 Deschênes', '230W', or 'Haydon'", category: "building", learned: "2026-06-11", source: "Matt" },
+          { text: "Promo: 1 month free on 1BR. Month 1 FREE, months 2–8 at market−(market/7), reverts after month 8.", category: "promo", learned: "2026-06-11", source: "Matt" },
+          { text: "Promo: 2 months free on 2BR — exact formula TBD, confirm with management before quoting.", category: "promo", learned: "2026-06-11", source: "Matt" }
+        ],
+        amenities: { ac: null, laundry_insuite: false, laundry_shared: true, dishwasher: null, parking_indoor: true, parking_outdoor: null, pool: true, pet: true, balcony: true, river_view: true, all_inclusive: true, fitness: true },
+        community: ["Outdoor pool and courtyard (exclusive to DCH buildings)", "ALL-INCLUSIVE — heat, water, hydro included"],
+        promos: ["1BR: month 1 FREE + months 2–8 at (market − market/7), then reverts to market", "2BR: 2 months free — formula TBD, confirm with mgmt"],
+        promo_formula: { type: "months_free_by_bedrooms", "1BR": { months_free: 1, divisor: 7, incentive_window: 8 }, "2BR": { months_free: 2, divisor: "TBD" } }
+      },
+      "Deschênes Court Moodie": {
+        address: "210 Woodridge Crescent",
+        floor_plans: [
+          { name: "Aquarius", br: 1, sqft: 580, from: 1848 },
+          { name: "Taurus / Gemini", br: 2, sqft: 810, from: 2170 },
+          { name: "Auriga", br: 2, sqft: 880, from: 2298 }
+        ],
+        facts: [
+          { text: "ALL-INCLUSIVE — heat + water + hydro all included in rent", category: "utilities", learned: "2026-06-12", source: "Website" },
+          { text: "Outdoor pool and courtyard — exclusive to DCH buildings", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "Fridge and stove standard; portable dishwasher available for additional fee", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "LVT flooring, private balconies with Ottawa River views", category: "finishes", learned: "2026-06-12", source: "Website" },
+          { text: "Indoor parking available (additional fee)", category: "parking", learned: "2026-06-12", source: "Website" },
+          { text: "Also known as '210 Deschênes', '210W', or 'Moodie'", category: "building", learned: "2026-06-12", source: "Website" },
+          { text: "No promo — apply 8-month rental discount: market/8 = monthly discount for 8 months, then reverts.", category: "promo", learned: "2026-06-12", source: "Matt" }
+        ],
+        amenities: { ac: null, laundry_insuite: false, laundry_shared: true, dishwasher: false, parking_indoor: true, parking_outdoor: null, pool: true, pet: true, balcony: true, river_view: true, all_inclusive: true, fitness: true },
+        community: ["Outdoor pool and courtyard (exclusive to DCH buildings)", "ALL-INCLUSIVE — heat, water, hydro included"],
+        promos: ["8-month rental discount: market/8 per month for 8 months"],
+        promo_formula: { type: "no_promo", divisor: 8 }
+      },
+      "Deschênes Court Franklin": {
+        address: "220 Woodridge Crescent",
+        floor_plans: [
+          { name: "Lacerta", br: 1, sqft: 580, from: 1875 },
+          { name: "Virgo", br: 1, sqft: 620, from: 1960 },
+          { name: "Libra / Sagittarius", br: 2, sqft: 740, from: 2175 },
+          { name: "Scorpio", br: 2, sqft: 820, from: 2181 },
+          { name: "Capricorn", br: 2, sqft: 810, from: 2210 }
+        ],
+        facts: [
+          { text: "ALL-INCLUSIVE — heat + water + hydro all included in rent", category: "utilities", learned: "2026-06-12", source: "Website" },
+          { text: "Outdoor pool and courtyard — exclusive to DCH buildings", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "Fridge and stove standard; dishwasher in select units; portable available for fee", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "Sunken living rooms in some floor plans", category: "building", learned: "2026-06-12", source: "Website" },
+          { text: "LVT flooring, private balconies with Ottawa River views", category: "finishes", learned: "2026-06-12", source: "Website" },
+          { text: "Indoor parking available (additional fee)", category: "parking", learned: "2026-06-12", source: "Website" },
+          { text: "Also known as '220 Deschênes', '220W', or 'Franklin'", category: "building", learned: "2026-06-11", source: "Matt" },
+          { text: "No promo — apply 8-month rental discount: market/8 = monthly discount for 8 months, then reverts.", category: "promo", learned: "2026-06-11", source: "Matt" }
+        ],
+        amenities: { ac: null, laundry_insuite: false, laundry_shared: true, dishwasher: null, parking_indoor: true, parking_outdoor: null, pool: true, pet: true, balcony: true, river_view: true, all_inclusive: true, fitness: true },
+        community: ["Outdoor pool and courtyard (exclusive to DCH buildings)", "ALL-INCLUSIVE — heat, water, hydro included"],
+        promos: ["8-month rental discount: market/8 per month for 8 months"],
+        promo_formula: { type: "no_promo", divisor: 8 }
+      },
+      "Townhomes": {
+        address: "98 Woodridge Crescent",
+        floor_plans: [
+          { name: "Type A (2BR)", br: 2, sqft: 1076, from: 2553 },
+          { name: "Type B (2BR)", br: 2, sqft: 1076, from: 2640 },
+          { name: "Type A (3BR)", br: 3, sqft: 1226, from: 2400 },
+          { name: "Type B (3BR)", br: 3, sqft: 1226, from: 2771 }
+        ],
+        facts: [
+          { text: "5 appliances included: fridge, stove, dishwasher, washer AND dryer in-suite", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "1 outdoor parking space included in rent (additional spaces available for fee)", category: "parking", learned: "2026-06-12", source: "Website" },
+          { text: "Central AC, hardwood floors, updated counters and cabinets, 1.5 bathrooms, private back patio", category: "finishes", learned: "2026-06-12", source: "Website" },
+          { text: "Finished basement in select units — always confirm before showing", category: "building", learned: "2026-06-12", source: "Website" },
+          { text: "Heat + hydro NOT included — tenants pay utilities directly", category: "utilities", learned: "2026-06-12", source: "Website" },
+          { text: "Access to Accora Centre: indoor + outdoor pools, weight room, cardio, licensed childcare", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "Units vacant 200+ days automatically qualify for 2 calendar months free", category: "promo", learned: "2026-06-10", source: "Matt" },
+          { text: "132W8 (finished basement) has 2 months free as of June 2026 — 200+ days vacant", category: "promo", learned: "2026-06-10", source: "Marie showing" }
+        ],
+        amenities: { ac: true, laundry_insuite: true, laundry_shared: false, dishwasher: true, parking_indoor: false, parking_outdoor: true, pool: true, pet: true, balcony: false, river_view: null, all_inclusive: false, fitness: true },
+        community: ["Access to Accora Centre (pools, fitness, licensed childcare)"],
         promos: ["2 months free on units vacant 200+ days"]
+      },
+      "Garden Homes": {
+        address: "98 Woodridge Crescent",
+        floor_plans: [
+          { name: "3 Bedroom", br: 3, sqft: "1334–1549", from: 2958 },
+          { name: "4 Bedroom", br: 4, sqft: 1681, from: 2946 }
+        ],
+        facts: [
+          { text: "5 appliances included: fridge, stove, dishwasher, washer AND dryer in-suite", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "1 outdoor parking space included in rent (additional spaces available for fee)", category: "parking", learned: "2026-06-12", source: "Website" },
+          { text: "Central AC, hardwood floors, updated counters and cabinets, 1.5 bathrooms", category: "finishes", learned: "2026-06-12", source: "Website" },
+          { text: "Private back patio with front yard green space", category: "building", learned: "2026-06-12", source: "Website" },
+          { text: "Heat + hydro NOT included — tenants pay utilities directly", category: "utilities", learned: "2026-06-12", source: "Website" },
+          { text: "Access to Accora Centre: indoor + outdoor pools, weight room, cardio, licensed childcare", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "No promo — apply 8-month rental discount: market/8 = monthly discount for 8 months, then reverts.", category: "promo", learned: "2026-06-12", source: "Matt" }
+        ],
+        amenities: { ac: true, laundry_insuite: true, laundry_shared: false, dishwasher: true, parking_indoor: false, parking_outdoor: true, pool: true, pet: true, balcony: false, river_view: null, all_inclusive: false, fitness: true },
+        community: ["Access to Accora Centre (pools, fitness, licensed childcare)"],
+        promos: ["8-month rental discount: market/8 per month for 8 months"],
+        promo_formula: { type: "no_promo", divisor: 8 }
+      },
+      "Executive Garden Homes": {
+        address: "98 Woodridge Crescent",
+        floor_plans: [
+          { name: "3 Bedroom", br: 3, sqft: "1325–1331", from: null },
+          { name: "4 Bedroom", br: 4, sqft: null, from: null }
+        ],
+        facts: [
+          { text: "Private garage + driveway included — 2 vehicles. Only Accora property with private garage.", category: "parking", learned: "2026-06-12", source: "Website" },
+          { text: "5 stainless steel appliances: fridge, stove, dishwasher, washer AND dryer in-suite", category: "amenity", learned: "2026-06-12", source: "Website" },
+          { text: "Central AC, hardwood floors, new counters and cabinets, large private backyard", category: "finishes", learned: "2026-06-12", source: "Website" },
+          { text: "Water included; heat and hydro extra", category: "utilities", learned: "2026-06-12", source: "Website" },
+          { text: "No units currently available for lease (as of June 2026)", category: "building", learned: "2026-06-12", source: "Website" },
+          { text: "Access to Accora Centre: indoor + outdoor pools, fitness, licensed childcare", category: "amenity", learned: "2026-06-12", source: "Website" }
+        ],
+        amenities: { ac: true, laundry_insuite: true, laundry_shared: false, dishwasher: true, parking_indoor: true, parking_outdoor: true, pool: true, pet: true, balcony: false, river_view: null, all_inclusive: false, fitness: true },
+        community: ["Access to Accora Centre (pools, fitness, licensed childcare)"],
+        promos: []
       }
     },
     units: {
@@ -1895,38 +2113,144 @@ function renderBrain() {
   updateImportStatus();
 }
 
+const AMN_LABELS = {
+  ac:'AC', laundry_insuite:'In-suite Laundry', laundry_shared:'Shared Laundry',
+  dishwasher:'Dishwasher', parking_indoor:'Indoor Parking', parking_outdoor:'Outdoor Parking',
+  pool:'Pool', pet:'Pet-friendly', balcony:'Balcony', river_view:'River View',
+  all_inclusive:'All-inclusive', fitness:'Fitness'
+};
+const AMN_ICONS = {
+  ac:'❄', laundry_insuite:'🧺', laundry_shared:'👕', dishwasher:'🍽',
+  parking_indoor:'🏠', parking_outdoor:'🅿', pool:'🏊', pet:'🐾',
+  balcony:'🌅', river_view:'🏞', all_inclusive:'💡', fitness:'💪'
+};
+
 function renderPropertyKnowledge(query) {
   const el = document.getElementById('property-knowledge-list');
   const props = Object.entries(D.knowledge.properties);
-  const filtered = query ? props.filter(([k,v]) => k.toLowerCase().includes(query) || v.facts.some(f=>f.text.toLowerCase().includes(query))) : props;
+  const filtered = query ? props.filter(([k,v]) => k.toLowerCase().includes(query) || (v.facts||[]).some(f=>f.text.toLowerCase().includes(query))) : props;
   if (!filtered.length) { el.innerHTML = `<div class="empty"><div class="empty-text">No property knowledge yet</div></div>`; return; }
   el.innerHTML = filtered.map(([name, pk]) => {
-    const unitsKnown = Object.keys(D.knowledge.units).filter(k=>k.startsWith(name+'::')).length;
+    const safe = name.replace(/[^a-zA-Z0-9]/g,'_');
     const facts = pk.facts || [];
-    const amns = Object.entries(pk.amenities||{}).filter(([,v])=>v===true);
+    const amns = pk.amenities || {};
+    const fps = pk.floor_plans || [];
+    // Header chips: show only yes amenities
+    const yesAmns = Object.entries(amns).filter(([,v])=>v===true).slice(0,4);
+    const headerChips = yesAmns.map(([k])=>`<span class="amn-chip amn-chip-yes" style="pointer-events:none;padding:2px 7px;font-size:10px">${AMN_ICONS[k]||''} ${AMN_LABELS[k]||k}</span>`).join('');
+    // Amenity toggle grid
+    const amnGrid = Object.entries(AMN_LABELS).map(([key, label]) => {
+      const val = amns[key];
+      const cls = val===true?'amn-chip-yes':val===false?'amn-chip-no':'amn-chip-unk';
+      const icon = AMN_ICONS[key]||'';
+      const txt = val===true?'✓ ':val===false?'✗ ':'? ';
+      return `<span class="amn-chip ${cls}" onclick="toggleAmn('${escAttr(name)}','${key}')" title="Click to toggle">${icon} ${txt}${label}</span>`;
+    }).join('');
+    // Floor plans
+    const fpHtml = fps.length ? `
+      <div class="prop-body-section">
+        <div class="prop-section-label">Floor Plans</div>
+        <div class="fp-grid">${fps.map(fp=>`
+          <div class="fp-card">
+            <div class="fp-name">${escH(fp.name)}</div>
+            <div class="fp-detail">${fp.br===0?'Studio':fp.br+'BR'}${fp.sqft?' · '+fp.sqft+' sqft':''}</div>
+            ${fp.from?`<div class="fp-price">from $${fp.from.toLocaleString()}/mo</div>`:''}
+          </div>`).join('')}
+        </div>
+      </div>` : '';
+    // Facts
+    const factsHtml = facts.map((f,i)=>{
+      const icon = f.category==='utilities'?'💡':f.category==='promo'?'🎁':f.category==='parking'?'🅿':f.category==='finishes'?'✨':f.category==='amenity'?'✓':f.category==='building'?'🏢':f.category==='location'?'📍':'📌';
+      return `<div class="prop-fact" id="fact-row-${safe}-${i}">
+        <div class="prop-fact-icon">${icon}</div>
+        <div class="prop-fact-content">
+          <div class="prop-fact-text" id="fact-text-${safe}-${i}">${escH(f.text)}</div>
+          <input class="prop-fact-edit-input" id="fact-input-${safe}-${i}" style="display:none" value="${escAttr(f.text)}"
+            onkeydown="if(event.key==='Enter')savePropFact('${escAttr(name)}',${i});if(event.key==='Escape')cancelEditFact('${escAttr(name)}',${i})">
+          <div class="prop-fact-meta">${fmtDate(f.learned)}${f.source?' · '+escH(f.source):''}</div>
+        </div>
+        <div class="prop-fact-actions">
+          <button class="fact-action-btn" onclick="editPropFact('${escAttr(name)}',${i})" title="Edit">✏</button>
+          <button class="fact-action-btn del" onclick="deletePropFact('${escAttr(name)}',${i})" title="Delete">×</button>
+        </div>
+      </div>`;
+    }).join('');
     return `
       <div class="prop-knowledge-card">
-        <div class="prop-knowledge-header" onclick="togglePropCard('${escH(name)}')">
-          <div>
+        <div class="prop-knowledge-header" onclick="togglePropCard('${escAttr(name)}')">
+          <div style="min-width:0">
             <div class="prop-name">${escH(name)}</div>
-            <div class="prop-meta">${facts.length} fact${facts.length!==1?'s':''} · ${unitsKnown} unit${unitsKnown!==1?'s':''} known${amns.length?' · '+amns.map(([k])=>k).join(', '):''}</div>
+            ${pk.address?`<div class="prop-address">${escH(pk.address)}</div>`:''}
           </div>
-          <span class="prop-chevron" id="chevron-${escH(name).replace(/\s/g,'_')}">▼</span>
+          <div class="prop-header-chips">${headerChips}</div>
+          <span class="prop-chevron" id="chevron-${safe}">▼</span>
         </div>
-        <div class="prop-knowledge-body" id="prop-body-${escH(name).replace(/\s/g,'_')}">
-          ${facts.map((f,i)=>`
-            <div class="prop-fact">
-              <div class="prop-fact-icon">${f.category==='amenity'?'✓':f.category==='community'?'✦':f.category==='promo'?'🎁':'📌'}</div>
-              <div style="flex:1"><div class="prop-fact-text">${escH(f.text)}</div><div class="prop-fact-meta">Learned ${fmtDate(f.learned)}${f.source?' · '+escH(f.source):''}</div></div>
-              <button class="fact-del" onclick="deletePropFact('${escAttr(name)}',${i})" title="Remove">×</button>
-            </div>`).join('')}
-          <div class="add-fact-row">
-            <input class="add-fact-input" type="text" placeholder="Add a fact about ${escH(name)}…" id="new-fact-${escH(name).replace(/\s/g,'_')}" onkeydown="if(event.key==='Enter')addPropFact('${escAttr(name)}')">
-            <button class="btn btn-secondary btn-sm" onclick="addPropFact('${escAttr(name)}')">Save</button>
+        <div class="prop-knowledge-body" id="prop-body-${safe}">
+          <div class="prop-body-section">
+            <div class="prop-section-label">Amenities <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--ink4)">— click to toggle</span></div>
+            <div class="amn-toggle-grid">${amnGrid}</div>
+          </div>
+          ${fpHtml}
+          <div class="prop-body-section">
+            <div class="prop-section-label">Facts</div>
+            ${factsHtml}
+            <div class="add-fact-row" style="margin-top:10px">
+              <input class="add-fact-input" type="text" placeholder="Add a fact…" id="new-fact-${safe}" onkeydown="if(event.key==='Enter')addPropFact('${escAttr(name)}')">
+              <button class="btn btn-secondary btn-sm" onclick="addPropFact('${escAttr(name)}')">Save</button>
+            </div>
           </div>
         </div>
       </div>`;
   }).join('');
+}
+
+function toggleAmn(propName, key) {
+  const pk = D.knowledge.properties[propName];
+  if (!pk) return;
+  if (!pk.amenities) pk.amenities = {};
+  const cur = pk.amenities[key];
+  pk.amenities[key] = cur === null || cur === undefined ? true : cur === true ? false : null;
+  saveData();
+  renderPropertyKnowledge(document.getElementById('brain-search')?.value?.toLowerCase() || '');
+  // re-open the card
+  setTimeout(() => {
+    const safe = propName.replace(/[^a-zA-Z0-9]/g,'_');
+    const body = document.getElementById(`prop-body-${safe}`);
+    if (body && !body.classList.contains('open')) body.classList.add('open');
+    const chev = document.getElementById(`chevron-${safe}`);
+    if (chev) chev.classList.add('open');
+  }, 10);
+}
+
+function editPropFact(name, i) {
+  const safe = name.replace(/[^a-zA-Z0-9]/g,'_');
+  document.getElementById(`fact-text-${safe}-${i}`).style.display = 'none';
+  const inp = document.getElementById(`fact-input-${safe}-${i}`);
+  inp.style.display = 'block';
+  inp.focus();
+  inp.select();
+}
+
+function savePropFact(name, i) {
+  const safe = name.replace(/[^a-zA-Z0-9]/g,'_');
+  const inp = document.getElementById(`fact-input-${safe}-${i}`);
+  if (!inp) return;
+  const val = inp.value.trim();
+  if (val) D.knowledge.properties[name].facts[i].text = val;
+  saveData();
+  renderPropertyKnowledge(document.getElementById('brain-search')?.value?.toLowerCase() || '');
+  setTimeout(() => {
+    const body = document.getElementById(`prop-body-${safe}`);
+    if (body) body.classList.add('open');
+    const chev = document.getElementById(`chevron-${safe}`);
+    if (chev) chev.classList.add('open');
+  }, 10);
+}
+
+function cancelEditFact(name, i) {
+  const safe = name.replace(/[^a-zA-Z0-9]/g,'_');
+  document.getElementById(`fact-text-${safe}-${i}`).style.display = '';
+  document.getElementById(`fact-input-${safe}-${i}`).style.display = 'none';
 }
 
 function togglePropCard(name) {
@@ -2126,6 +2450,28 @@ function switchTab(name) {
 /* ══════════════════════════════════════════════════════
    INIT
 ══════════════════════════════════════════════════════ */
+function mergeSeedKnowledge() {
+  const seed = window._snap.knowledge.properties;
+  Object.entries(seed).forEach(([name, sp]) => {
+    if (!D.knowledge.properties[name]) {
+      D.knowledge.properties[name] = JSON.parse(JSON.stringify(sp));
+      return;
+    }
+    const dp = D.knowledge.properties[name];
+    // Merge address + floor_plans from seed if missing
+    if (!dp.address && sp.address) dp.address = sp.address;
+    if (!dp.floor_plans && sp.floor_plans) dp.floor_plans = sp.floor_plans;
+    // Merge amenities: seed fills in null/undefined slots, but doesn't override manual values
+    if (!dp.amenities) dp.amenities = {};
+    Object.entries(sp.amenities || {}).forEach(([k,v]) => {
+      if (dp.amenities[k] === undefined) dp.amenities[k] = v;
+    });
+    // Merge promo_formula from seed if missing
+    if (!dp.promo_formula && sp.promo_formula) dp.promo_formula = sp.promo_formula;
+  });
+  saveData();
+}
+
 function initTheme() {
   if (localStorage.getItem('accora_theme') === 'dark') {
     document.documentElement.setAttribute('data-theme','dark');
@@ -2151,6 +2497,7 @@ function updateThemeBtn() {
 function init() {
   initTheme();
   loadData();
+  mergeSeedKnowledge();
   // Header date
   const now = new Date();
   document.getElementById('header-date').textContent = now.toLocaleDateString('en-CA', { weekday:'short', month:'short', day:'numeric', year:'numeric' });
