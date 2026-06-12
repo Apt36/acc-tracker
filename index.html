@@ -406,17 +406,26 @@ input,select,textarea{font-family:inherit;font-size:14px}
         </select>
       </div>
       <div class="filter-row">
-        <span class="filter-label">Must have</span>
-        <button class="amn-toggle" data-amn="ac" onclick="toggleAmn('ac')">AC</button>
-        <button class="amn-toggle" data-amn="laundry" onclick="toggleAmn('laundry')">In-suite Laundry</button>
-        <button class="amn-toggle" data-amn="balcony" onclick="toggleAmn('balcony')">Balcony</button>
-        <button class="amn-toggle" data-amn="stainless" onclick="toggleAmn('stainless')">Stainless</button>
-        <button class="amn-toggle" data-amn="parking" onclick="toggleAmn('parking')">Parking</button>
+        <span class="filter-label">Features</span>
+        <button class="amn-toggle" data-amn="ac" onclick="toggleFindAmn('ac')">❄ AC</button>
+        <button class="amn-toggle" data-amn="laundry_insuite" onclick="toggleFindAmn('laundry_insuite')">🧺 In-suite Laundry</button>
+        <button class="amn-toggle" data-amn="dishwasher" onclick="toggleFindAmn('dishwasher')">🍽 Dishwasher</button>
+        <button class="amn-toggle" data-amn="all_inclusive" onclick="toggleFindAmn('all_inclusive')">💡 All-inclusive</button>
+        <button class="amn-toggle" data-amn="pool" onclick="toggleFindAmn('pool')">🏊 Pool</button>
+        <button class="amn-toggle" data-amn="balcony" onclick="toggleFindAmn('balcony')">🌅 Balcony</button>
       </div>
       <div class="filter-row">
-        <span class="filter-label">Show</span>
-        <button class="br-chip" id="toggle-known" onclick="toggleKnownOnly()">Known Units Only</button>
-        <button class="btn btn-ghost btn-sm" onclick="clearFilters()" style="margin-left:auto">Clear filters</button>
+        <span class="filter-label">Availability</span>
+        <select class="prop-select" id="filter-occ" onchange="renderFind()">
+          <option value="vacant">Vacant only</option>
+          <option value="all">Vacant + Notice</option>
+          <option value="notice">Notice only</option>
+        </select>
+        <select class="prop-select" id="filter-month" onchange="renderFind()">
+          <option value="">Any move-in</option>
+        </select>
+        <button class="br-chip" id="toggle-known" onclick="toggleKnownOnly()" style="margin-left:4px">Known Only</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearFilters()" style="margin-left:auto">Clear</button>
       </div>
     </div>
     <div id="find-results"></div>
@@ -1344,7 +1353,7 @@ function unitLink(property, unit) {
   const uk = D.knowledge.units[key];
   const visits = uk?.visits?.length || 0;
   const dot = visits > 0 ? `<span class="unit-link-dot" style="background:var(--${visits>=3?'red':visits>=2?'amber':'teal'},#888)"></span>` : '';
-  return `<span class="unit-link" onclick="event.stopPropagation();openUnitModal('${escAttr(key)}')">${dot}${escH(propShort(property))} · ${escH(unit)}</span>`;
+  return `<span class="unit-link" onclick="event.stopPropagation();openUnitModal('${escAttr(key)}')">${dot}${escH(propShort(property))} · ${escH(formatUnitDisplay(property, unit))}</span>`;
 }
 
 function escAttr(s) { return String(s||'').replace(/'/g,'&#39;').replace(/"/g,'&quot;'); }
@@ -1479,7 +1488,7 @@ function toggleBR(n) {
   });
   renderFind();
 }
-function toggleAmn(a) {
+function toggleFindAmn(a) {
   if (filters.amenities.has(a)) filters.amenities.delete(a); else filters.amenities.add(a);
   document.querySelectorAll('.amn-toggle').forEach(b => {
     b.classList.toggle('on', filters.amenities.has(b.dataset.amn));
@@ -1497,6 +1506,8 @@ function clearFilters() {
   filters.knownOnly = false;
   document.getElementById('filter-rent').value = '';
   document.getElementById('filter-prop').value = '';
+  document.getElementById('filter-occ').value = 'vacant';
+  document.getElementById('filter-month').value = '';
   document.querySelectorAll('.br-chip[data-br], .amn-toggle').forEach(b => b.classList.remove('on'));
   document.getElementById('toggle-known').classList.remove('on');
   renderFind();
@@ -1510,35 +1521,64 @@ function setProspectFilter(f) {
 /* ══════════════════════════════════════════════════════
    FIND TAB
 ══════════════════════════════════════════════════════ */
+function formatUnitDisplay(property, unit) {
+  if (['Townhomes','Garden Homes','Executive Garden Homes'].includes(property)) {
+    const m = unit.match(/^(\d+[A-Za-z]+)(.+)$/);
+    if (m) return `${m[1]} - Unit ${m[2]}`;
+  }
+  return unit;
+}
+
 function enrichUnit(u) {
   const key = unitKey(u.property, u.unit);
   const uk = D.knowledge.units[key];
   const pk = getPropKnowledge(u.property);
   return {
     ...u,
-    uk,
-    pk,
+    uk, pk,
+    displayUnit: formatUnitDisplay(u.property, u.unit),
     ac: getEffectiveAmenity(u.property, u.unit, 'ac'),
-    laundry: getEffectiveAmenity(u.property, u.unit, 'laundry'),
+    laundry: getEffectiveAmenity(u.property, u.unit, 'laundry_insuite'),
+    dishwasher: getEffectiveAmenity(u.property, u.unit, 'dishwasher'),
     balcony: getEffectiveAmenity(u.property, u.unit, 'balcony'),
-    stainless: getEffectiveAmenity(u.property, u.unit, 'stainless'),
-    parking: getEffectiveAmenity(u.property, u.unit, 'parking'),
+    all_inclusive: getEffectiveAmenity(u.property, u.unit, 'all_inclusive'),
+    pool: getEffectiveAmenity(u.property, u.unit, 'pool'),
     visits: getVisitCount(u.property, u.unit),
     facts: uk ? uk.facts || [] : [],
     holdInfo: (D.inventory.holds || []).find(h => h.unit === u.unit)
   };
 }
 
+function isVacant(u) {
+  const o = (u.occ || '').toLowerCase().trim();
+  return o === '' || o === 'v' || o === 'vacant';
+}
+function isNotice(u) {
+  const o = (u.occ || '').toLowerCase().trim();
+  return o === 'n' || o === 'notice';
+}
 function applyFilters(units) {
   const rent = parseInt(document.getElementById('filter-rent')?.value) || null;
   const prop = document.getElementById('filter-prop')?.value || '';
+  const occ = document.getElementById('filter-occ')?.value || 'vacant';
+  const month = document.getElementById('filter-month')?.value || '';
   return units.filter(u => {
+    // Occupancy
+    if (occ === 'vacant' && !isVacant(u)) return false;
+    if (occ === 'notice' && !isNotice(u)) return false;
+    // BR
     if (filters.brs.size > 0) {
       const br = u.br >= 4 ? 4 : u.br;
       if (!filters.brs.has(br)) return false;
     }
     if (rent && u.rent > rent) return false;
     if (prop && u.property !== prop) return false;
+    // Move-in month
+    if (month && u.date_avail) {
+      const avail = u.date_avail.slice(0, 7); // "2026-07"
+      if (avail !== month) return false;
+    }
+    // Amenities (cross-references property knowledge)
     for (const a of filters.amenities) {
       const val = getEffectiveAmenity(u.property, u.unit, a);
       if (val !== true) return false;
@@ -1557,30 +1597,28 @@ function amnBadge(label, val) {
 function renderUnitCard(u) {
   const hold = u.holdInfo;
   const days = u.date_avail ? daysUntil(u.date_avail) : null;
+  const occLower = (u.occ || '').toLowerCase().trim();
   let statusHtml = '';
   if (hold) {
-    statusHtml = `<span class="status-hold">On Hold · ${escH(hold.held_by)}</span>`;
-  } else if (u.occ === 'Notice') {
-    statusHtml = `<span class="status-notice">Notice</span>`;
-  } else if (u.occ === 'Eviction') {
+    statusHtml = `<span class="status-hold">Hold · ${escH(hold.held_by)}</span>`;
+  } else if (occLower === 'n' || occLower === 'notice') {
+    statusHtml = `<span class="status-notice">On Notice</span>`;
+  } else if (occLower === 'eviction') {
     statusHtml = `<span class="status-eviction">Eviction</span>`;
   } else {
-    statusHtml = `<span class="status-past">Available</span>`;
+    statusHtml = `<span class="status-past">Vacant</span>`;
   }
-  const availText = u.date_avail ? `Avail ${fmtDate(u.date_avail)}${days !== null && days <= 30 ? ` · <b style="color:var(--amber)">${days} days</b>` : ''}` : 'Availability TBD';
+  const availText = u.date_avail ? `Avail ${fmtDate(u.date_avail)}${days !== null && days <= 30 ? ` · <b style="color:var(--amber)">${days}d</b>` : ''}` : 'Avail TBD';
   const factsPreview = u.facts.length > 0 ? `<div class="unit-notes-preview">${escH(u.facts.slice(0,2).join(' · '))}</div>` : '';
-
-  // community perks from property
-  const communityPerks = u.pk && u.pk.community && u.pk.community.length > 0
-    ? `<div style="font-size:11px;color:var(--teal);margin-top:5px">✦ ${escH(u.pk.community[0])}</div>`
-    : '';
+  const allIn = u.all_inclusive === true ? `<span class="amn-badge amn-yes">💡 All-in</span>` : '';
+  const ukey = escAttr(unitKey(u.property, u.unit));
 
   return `
-    <div class="unit-card">
+    <div class="unit-card" onclick="openUnitModal('${ukey}')" style="cursor:pointer">
       <div class="unit-card-top">
         <div>
           <div class="unit-prop">${escH(propShort(u.property))}</div>
-          <div class="unit-num">Unit ${escH(u.unit)}</div>
+          <div class="unit-num">${escH(u.displayUnit || u.unit)}</div>
         </div>
         <div class="unit-br-rent">
           <div class="unit-br">${brlabel(u.br)}</div>
@@ -1589,18 +1627,35 @@ function renderUnitCard(u) {
       </div>
       <div class="unit-card-mid">
         ${famDots(u.visits)}
-        ${amnBadge('AC', u.ac)}
-        ${amnBadge('Laundry', u.laundry)}
+        ${u.ac !== null ? amnBadge('AC', u.ac) : ''}
+        ${u.laundry !== null ? amnBadge('Laundry', u.laundry) : ''}
+        ${u.dishwasher === false ? amnBadge('DW', false) : u.dishwasher === true ? amnBadge('DW', true) : ''}
         ${u.balcony === true ? amnBadge('Balcony', true) : ''}
-        ${u.stainless === true ? amnBadge('Stainless', true) : u.stainless === false ? amnBadge('Stainless', false) : ''}
+        ${allIn}
       </div>
       <div class="unit-card-bot">
         <div class="unit-avail${days !== null && days <= 14 ? ' urgent' : ''}">${availText}</div>
         ${statusHtml}
       </div>
       ${factsPreview}
-      ${communityPerks}
     </div>`;
+}
+
+function populateMonthFilter() {
+  const sel = document.getElementById('filter-month');
+  if (!sel) return;
+  const months = new Set();
+  (D.inventory.units || []).forEach(u => {
+    if (u.date_avail) months.add(u.date_avail.slice(0,7));
+  });
+  const sorted = [...months].sort();
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">Any move-in</option>` + sorted.map(m => {
+    const [y,mo] = m.split('-');
+    const label = new Date(+y, +mo-1).toLocaleDateString('en-CA', { month:'short', year:'numeric' });
+    return `<option value="${m}">${label}</option>`;
+  }).join('');
+  if (cur) sel.value = cur;
 }
 
 function renderFind() {
@@ -1609,6 +1664,7 @@ function renderFind() {
     el.innerHTML = `<div class="empty"><div class="empty-icon">📊</div><div class="empty-text">No inventory loaded</div><div class="empty-sub">Import today's xlsx in the Brain tab to see available units</div></div>`;
     return;
   }
+  populateMonthFilter();
   const filtered = applyFilters(D.inventory.units);
   const enriched = filtered.map(enrichUnit);
   // sort: holds last, then by date_avail
@@ -2144,7 +2200,7 @@ function renderPropertyKnowledge(query) {
       const cls = val===true?'amn-chip-yes':val===false?'amn-chip-no':'amn-chip-unk';
       const icon = AMN_ICONS[key]||'';
       const txt = val===true?'✓ ':val===false?'✗ ':'? ';
-      return `<span class="amn-chip ${cls}" onclick="toggleAmn('${escAttr(name)}','${key}')" title="Click to toggle">${icon} ${txt}${label}</span>`;
+      return `<span class="amn-chip ${cls}" onclick="togglePropAmn('${escAttr(name)}','${key}')" title="Click to toggle">${icon} ${txt}${label}</span>`;
     }).join('');
     // Floor plans
     const fpHtml = fps.length ? `
@@ -2204,7 +2260,7 @@ function renderPropertyKnowledge(query) {
   }).join('');
 }
 
-function toggleAmn(propName, key) {
+function togglePropAmn(propName, key) {
   const pk = D.knowledge.properties[propName];
   if (!pk) return;
   if (!pk.amenities) pk.amenities = {};
@@ -2400,6 +2456,7 @@ function importInventoryFiles(files) {
         D.inventory.file_names = allNames;
         saveData();
         populatePropFilter();
+        populateMonthFilter();
         updateImportStatus();
         renderFind();
         renderBrain();
