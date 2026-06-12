@@ -260,6 +260,28 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .unit-visit-date{font-size:11px;color:var(--ink4);margin-top:2px}
 .unit-visit-notes{font-size:11px;color:var(--ink3);margin-top:2px}
 .unit-prop-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:var(--primary);cursor:pointer;margin-top:4px;text-decoration:underline;text-underline-offset:2px}
+/* Reaction picker — clickable anywhere a reaction shows */
+.reaction-btn{cursor:pointer;display:inline-flex;align-items:center;gap:2px;padding:2px 5px;border-radius:5px;transition:background .12s;user-select:none;font-size:14px}
+.reaction-btn:hover{background:var(--surface2)}
+.reaction-caret{font-size:9px;color:var(--ink4);line-height:1}
+/* Inline note entry */
+.note-inline-area{background:var(--surface2);border:1.5px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;margin-top:8px}
+.note-inline-input{width:100%;border:none;background:transparent;font-size:13px;color:var(--ink);resize:none;outline:none;font-family:inherit;line-height:1.5;display:block}
+/* Property inventory rows inside Brain card */
+.prop-inv-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px;flex-wrap:wrap}
+.prop-inv-filters{display:flex;gap:5px}
+.prop-inv-filter{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:3px 8px;font-size:11px;color:var(--ink2);background:var(--surface);cursor:pointer}
+.prop-inv-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;border-radius:4px}
+.prop-inv-row:last-child{border-bottom:none}
+.prop-inv-row:hover{background:var(--surface2);margin:0 -8px;padding:7px 8px}
+.prop-inv-unit{font-size:12px;font-weight:600;color:var(--navy);min-width:60px}
+.prop-inv-br{font-size:11px;color:var(--ink4);min-width:42px}
+.prop-inv-rent{font-size:12px;font-weight:600;color:var(--ink2);min-width:80px}
+.prop-inv-promo{font-size:11px;color:var(--green);flex:1}
+.prop-inv-avail{font-size:11px;color:var(--ink4);white-space:nowrap}
+.prop-inv-occ{font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;flex-shrink:0}
+.prop-inv-occ.vacant{background:rgba(74,222,128,.15);color:var(--green)}
+.prop-inv-occ.notice{background:rgba(252,211,77,.15);color:var(--amber)}
 .unit-prop-link:hover{opacity:.75}
 .timeline-item{display:flex;gap:12px;padding:8px 0;border-left:2px solid var(--border);padding-left:14px;margin-left:4px;position:relative}
 .timeline-item::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--border2);position:absolute;left:-5px;top:13px}
@@ -1570,9 +1592,12 @@ function openUnitModal(key) {
 
   // ── Visit history ──
   const visitsHtml = visits.length
-    ? visits.map(v=>`<div class="unit-visit-row">
-        <div>
-          <div class="unit-visit-who">${reactionEmoji(v.reaction)} ${escH(v.prospect||'')}</div>
+    ? visits.map((v, idx)=>`<div class="unit-visit-row">
+        <div style="flex:1">
+          <div class="unit-visit-who">
+            <span class="reaction-btn" onclick="cycleVisitReaction('${escAttr(key)}',${idx})" title="Click to change reaction">${reactionEmoji(v.reaction)}<span class="reaction-caret">▾</span></span>
+            ${escH(v.prospect||'')}
+          </div>
           ${v.notes?`<div class="unit-visit-notes">${escH(v.notes)}</div>`:''}
         </div>
         <div class="unit-visit-date">${fmtDate(v.date)||''}</div>
@@ -1978,13 +2003,15 @@ function openProspect(id) {
     ${(p.shown_units||[]).length?`
     <div class="modal-section">
       <div class="modal-section-title">Units Shown (${p.shown_units.length})</div>
-      ${p.shown_units.map(u=>`
-        <div class="shown-unit-row" style="cursor:pointer" onclick="openUnitModal('${escAttr(unitKey(u.property,u.unit))}')">
-          <div>
+      ${p.shown_units.map((u,idx)=>`
+        <div class="shown-unit-row">
+          <div style="flex:1;min-width:0;cursor:pointer" onclick="closeProspectModal();openUnitModal('${escAttr(unitKey(u.property,u.unit))}')">
             <div class="shown-unit-name">${unitLink(u.property, u.unit)}</div>
             ${u.notes?`<div style="font-size:11px;color:var(--ink4);margin-top:3px">${escH(u.notes)}</div>`:''}
           </div>
-          <div class="shown-unit-reaction">${reactionEmoji(u.reaction)}</div>
+          <span class="reaction-btn" onclick="event.stopPropagation();cycleProspectReaction('${escAttr(p.id)}',${idx})" title="Click to change reaction">
+            ${reactionEmoji(u.reaction)}<span class="reaction-caret">▾</span>
+          </span>
         </div>`).join('')}
     </div>`:''}
 
@@ -2008,11 +2035,18 @@ function openProspect(id) {
         </div>`).join('')}
     </div>`:''}
 
-    <div style="padding-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+    <div style="padding-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
       <select onchange="updateProspectStage('${p.id}',this.value)" style="border:1.5px solid var(--border);border-radius:var(--r-sm);padding:6px 10px;font-size:13px;color:var(--ink);background:var(--surface)">
         ${['lead','shown','app_out','app_pending','crc','screening','approved','leased','lost','withdrew'].map(s=>`<option value="${s}"${p.stage===s?' selected':''}>${stageLabel(s)}</option>`).join('')}
       </select>
-      <button class="btn btn-secondary btn-sm" onclick="addTimelineEntry('${p.id}')">+ Log note</button>
+      <button class="btn btn-secondary btn-sm" onclick="toggleNoteInput('${p.id}')">+ Log note</button>
+    </div>
+    <div id="note-area-${p.id}" class="note-inline-area" style="display:none">
+      <textarea id="note-ta-${p.id}" class="note-inline-input" placeholder="What happened? New showing, feedback, next step…" rows="2" onkeydown="if(event.ctrlKey&&event.key==='Enter')saveInlineNote('${p.id}')"></textarea>
+      <div style="display:flex;gap:6px;margin-top:6px;justify-content:flex-end">
+        <button class="btn btn-secondary btn-sm" onclick="toggleNoteInput('${p.id}')">Cancel</button>
+        <button class="btn btn-primary btn-sm" onclick="saveInlineNote('${p.id}')">Save note</button>
+      </div>
     </div>`;
   document.getElementById('prospect-modal').classList.add('open');
 }
@@ -2024,8 +2058,95 @@ function closeProspectModal(e) {
 }
 
 function reactionEmoji(r) {
-  const m = { loved:'❤️', liked:'👍', neutral:'😐', disliked:'👎' };
+  const m = { loved:'❤️', liked:'👍', neutral:'😐', disliked:'👎', dealbreaker:'🚫' };
   return m[r] || '—';
+}
+
+function cycleReaction(r) {
+  const order = ['loved','liked','neutral','disliked','dealbreaker'];
+  const i = order.indexOf(r);
+  return i === -1 ? 'neutral' : order[(i+1) % order.length];
+}
+
+function cycleProspectReaction(prospectId, unitIdx) {
+  const p = D.prospects.find(x => x.id === prospectId);
+  if (!p || !p.shown_units || !p.shown_units[unitIdx]) return;
+  p.shown_units[unitIdx].reaction = cycleReaction(p.shown_units[unitIdx].reaction || 'neutral');
+  saveData();
+  openProspect(prospectId);
+}
+
+function cycleVisitReaction(key, visitIdx) {
+  const uk = D.knowledge.units[key];
+  if (!uk || !uk.visits || !uk.visits[visitIdx]) return;
+  uk.visits[visitIdx].reaction = cycleReaction(uk.visits[visitIdx].reaction || 'neutral');
+  saveData();
+  openUnitModal(key);
+}
+
+const propInvFilters = {};
+function renderPropInventory(name) {
+  const safe = name.replace(/[^a-zA-Z0-9]/g,'_');
+  const el = document.getElementById(`prop-inv-${safe}`);
+  if (!el) return;
+  if (!propInvFilters[name]) propInvFilters[name] = { occ: 'vacant', br: '' };
+  const f = propInvFilters[name];
+  const occSel = document.getElementById(`inv-occ-${safe}`);
+  const brSel = document.getElementById(`inv-br-${safe}`);
+  if (occSel) f.occ = occSel.value;
+  if (brSel) f.br = brSel.value;
+  let units = (D.inventory.units || []).filter(u => u.property === name);
+  if (f.occ === 'vacant') units = units.filter(u => isVacant(u));
+  else if (f.occ === 'notice') units = units.filter(u => isNotice(u));
+  if (f.br !== '') units = units.filter(u => String(u.br) === f.br);
+  units.sort((a,b) => {
+    const da = a.date_avail ? new Date(a.date_avail) : new Date('2099-01-01');
+    const db = b.date_avail ? new Date(b.date_avail) : new Date('2099-01-01');
+    return da - db;
+  });
+  if (!units.length) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--ink4);padding:4px 0">No units match these filters.</div>`;
+    return;
+  }
+  el.innerHTML = units.map(u => {
+    const promo = calcPromo(name, u.rent, u.br, u.days_vac);
+    const promoEff = promo?.effective ? promo.effective : null;
+    const promoStr = promoEff ? `→ $${promoEff.toLocaleString('en-CA',{minimumFractionDigits:2,maximumFractionDigits:2})}` : '';
+    const occClass = isVacant(u) ? 'vacant' : isNotice(u) ? 'notice' : '';
+    const occLabel = isVacant(u) ? 'Vacant' : isNotice(u) ? 'Notice' : '';
+    const availStr = u.date_avail ? fmtDate(u.date_avail) : '';
+    const key = unitKey(name, u.unit);
+    return `<div class="prop-inv-row" onclick="openUnitModal('${escAttr(key)}')">
+      <span class="prop-inv-unit">${escH(formatUnitDisplay(name, u.unit))}</span>
+      <span class="prop-inv-br">${brlabel(u.br)}</span>
+      <span class="prop-inv-rent">$${u.rent.toLocaleString()}</span>
+      ${promoStr ? `<span class="prop-inv-promo">${promoStr}/mo</span>` : '<span class="prop-inv-promo"></span>'}
+      <span class="prop-inv-avail">${availStr}</span>
+      ${occLabel ? `<span class="prop-inv-occ ${occClass}">${occLabel}</span>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function toggleNoteInput(prospectId) {
+  const area = document.getElementById(`note-area-${prospectId}`);
+  if (!area) return;
+  const hidden = area.style.display === 'none' || area.style.display === '';
+  area.style.display = hidden ? 'block' : 'none';
+  if (hidden) { const ta = document.getElementById(`note-ta-${prospectId}`); if(ta) ta.focus(); }
+}
+
+function saveInlineNote(prospectId) {
+  const ta = document.getElementById(`note-ta-${prospectId}`);
+  const text = ta?.value?.trim();
+  if (!text) return;
+  const p = D.prospects.find(x => x.id === prospectId);
+  if (p) {
+    p.timeline = p.timeline || [];
+    p.timeline.push({ date: new Date().toISOString().slice(0,10), event: text });
+    p.last_contact = new Date().toISOString().slice(0,10);
+    saveData();
+    openProspect(prospectId);
+  }
 }
 
 function updateProspectStage(id, stage) {
@@ -2413,6 +2534,29 @@ function renderPropertyKnowledge(query) {
         </div>
       </div>`;
     }).join('');
+    // Inventory section placeholder
+    const invCount = (D.inventory.units || []).filter(u => u.property === name).length;
+    const invSection = invCount > 0 ? `
+      <div class="prop-body-section">
+        <div class="prop-inv-bar">
+          <div class="prop-section-label" style="margin-bottom:0">Availability (${invCount} units)</div>
+          <div class="prop-inv-filters">
+            <select class="prop-inv-filter" id="inv-occ-${safe}" onchange="renderPropInventory('${escAttr(name)}')">
+              <option value="vacant">Vacant</option>
+              <option value="notice">On Notice</option>
+              <option value="all">All</option>
+            </select>
+            <select class="prop-inv-filter" id="inv-br-${safe}" onchange="renderPropInventory('${escAttr(name)}')">
+              <option value="">All BRs</option>
+              <option value="0">Studio</option>
+              <option value="1">1 BR</option>
+              <option value="2">2 BR</option>
+              <option value="3">3+ BR</option>
+            </select>
+          </div>
+        </div>
+        <div id="prop-inv-${safe}"></div>
+      </div>` : '';
     return `
       <div class="prop-knowledge-card">
         <div class="prop-knowledge-header" onclick="togglePropCard('${escAttr(name)}')">
@@ -2424,6 +2568,7 @@ function renderPropertyKnowledge(query) {
           <span class="prop-chevron" id="chevron-${safe}">▼</span>
         </div>
         <div class="prop-knowledge-body" id="prop-body-${safe}">
+          ${invSection}
           <div class="prop-body-section">
             <div class="prop-section-label">Amenities <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--ink4)">— click to toggle</span></div>
             <div class="amn-toggle-grid">${amnGrid}</div>
@@ -2492,10 +2637,14 @@ function cancelEditFact(name, i) {
 }
 
 function togglePropCard(name) {
-  const safe = name.replace(/\s/g,'_');
+  const safe = name.replace(/[^a-zA-Z0-9]/g,'_');
   const body = document.getElementById(`prop-body-${safe}`);
   const chevron = document.getElementById(`chevron-${safe}`);
-  if (body) { body.classList.toggle('open'); if(chevron) chevron.classList.toggle('open', body.classList.contains('open')); }
+  if (body) {
+    body.classList.toggle('open');
+    if (chevron) chevron.classList.toggle('open', body.classList.contains('open'));
+    if (body.classList.contains('open')) renderPropInventory(name);
+  }
 }
 
 function addPropFact(name) {
