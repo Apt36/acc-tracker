@@ -23,8 +23,47 @@
   --sh-lg:0 8px 24px rgba(0,0,0,.09),0 2px 6px rgba(0,0,0,.05);
   --r:12px;--r-sm:8px;--r-xs:6px;
 }
+/* ── DARK MODE ── */
+[data-theme="dark"]{
+  --bg:#0E1420;
+  --surface:#151D2F;
+  --surface2:#1B2440;
+  --ink:#ECF0FA;--ink2:#B2BDCF;--ink3:#6B7B95;--ink4:#3A4A62;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.11);
+  --navy:#2F5AAF;--navy-light:rgba(47,90,175,.18);
+  --blue:#6BA3F7;--blue-soft:rgba(107,163,247,.13);
+  --green:#4ADE80;--green-light:rgba(74,222,128,.1);--green-border:rgba(74,222,128,.2);
+  --amber:#FCD34D;--amber-light:rgba(252,211,77,.1);--amber-border:rgba(252,211,77,.2);
+  --red:#FC8181;--red-light:rgba(252,129,129,.1);--red-border:rgba(252,129,129,.2);
+  --purple:#A78BFA;--purple-light:rgba(167,139,250,.12);
+  --teal:#2DD4BF;--teal-light:rgba(45,212,191,.1);
+  --sh-sm:0 1px 4px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.045);
+  --sh:0 4px 20px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.055);
+  --sh-lg:0 16px 48px rgba(0,0,0,.75),0 0 0 1px rgba(255,255,255,.07);
+}
+[data-theme="dark"] .app-header{background:linear-gradient(135deg,#090F1E 0%,#0D1626 100%);border-bottom:1px solid rgba(255,255,255,.08)}
+[data-theme="dark"] .tab-bar{background:var(--surface);border-bottom:1px solid var(--border)}
+[data-theme="dark"] .tab-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
+[data-theme="dark"] .modal{background:var(--surface)}
+[data-theme="dark"] .modal-header{background:var(--surface);border-bottom:1px solid var(--border)}
+[data-theme="dark"] .modal-backdrop{background:rgba(0,0,0,.65)}
+[data-theme="dark"] .status-notice{background:rgba(99,155,245,.12);color:#93BBFC;border-color:rgba(99,155,245,.25)}
+[data-theme="dark"] .next-action-box{background:rgba(47,90,175,.15);border-color:rgba(107,163,247,.2)}
+[data-theme="dark"] .next-action-text{color:#93BBFC}
+[data-theme="dark"] .stove-card.urgent{background:rgba(252,211,77,.07);border-color:rgba(252,211,77,.25)}
+[data-theme="dark"] .stove-card.overdue{background:rgba(252,129,129,.07);border-color:rgba(252,129,129,.25)}
+[data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea{background:var(--surface2);color:var(--ink);border-color:var(--border2)}
+[data-theme="dark"] .find-sort{background:var(--surface2);color:var(--ink2);border-color:var(--border2)}
+[data-theme="dark"] .prop-select{background:var(--surface2);color:var(--ink)}
+[data-theme="dark"] .import-bar-sub{color:var(--green)}
+[data-theme="dark"] .unit-link{background:var(--surface2);border-color:var(--border2)}
+[data-theme="dark"] .debrief-result{background:var(--surface)}
+[data-theme="dark"] .notes-block{background:var(--surface2)}
+[data-theme="dark"] .criteria-item{background:var(--surface2)}
+[data-theme="dark"] .prop-knowledge-header:hover{background:var(--surface2)}
+
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased;transition:background-color .2s,color .2s}
 button{font-family:inherit;cursor:pointer;border:none;background:none}
 input,select,textarea{font-family:inherit;font-size:14px}
 
@@ -299,7 +338,10 @@ input,select,textarea{font-family:inherit;font-size:14px}
 <header class="app-header">
   <div class="app-logo">Accora <span>Brain</span></div>
   <div class="app-date" id="header-date"></div>
-  <button class="app-settings-btn" onclick="openSettings()">⚙</button>
+  <div style="display:flex;align-items:center;gap:4px">
+    <button class="app-settings-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle dark mode">🌙</button>
+    <button class="app-settings-btn" onclick="openSettings()">⚙</button>
+  </div>
 </header>
 
 <nav class="tab-bar">
@@ -2084,7 +2126,30 @@ function switchTab(name) {
 /* ══════════════════════════════════════════════════════
    INIT
 ══════════════════════════════════════════════════════ */
+function initTheme() {
+  if (localStorage.getItem('accora_theme') === 'dark') {
+    document.documentElement.setAttribute('data-theme','dark');
+  }
+  updateThemeBtn();
+}
+function toggleTheme() {
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if (dark) {
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('accora_theme','light');
+  } else {
+    document.documentElement.setAttribute('data-theme','dark');
+    localStorage.setItem('accora_theme','dark');
+  }
+  updateThemeBtn();
+}
+function updateThemeBtn() {
+  const btn = document.getElementById('theme-btn');
+  if (btn) btn.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀' : '🌙';
+}
+
 function init() {
+  initTheme();
   loadData();
   // Header date
   const now = new Date();
