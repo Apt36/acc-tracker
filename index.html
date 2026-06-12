@@ -1818,11 +1818,11 @@ function enrichUnit(u) {
 
 function isVacant(u) {
   const o = (u.occ || '').toLowerCase().trim();
-  return o === '' || o === 'v' || o === 'vacant';
+  return o === 'v' || o === 'vacant' || o === 'vac';
 }
 function isNotice(u) {
   const o = (u.occ || '').toLowerCase().trim();
-  return o === 'n' || o === 'notice';
+  return o === 'n' || o === 'notice' || o === 'on notice' || o === 'ntv' || o === 'occupied - on notice';
 }
 function applyFilters(units) {
   const rent = parseInt(document.getElementById('filter-rent')?.value) || null;
@@ -2783,7 +2783,9 @@ function updateImportStatus() {
     const holds = (D.inventory.holds||[]).length;
     const names = D.inventory.file_names || [];
     const nameStr = names.length ? names.join(' · ') : '1 file';
-    el.textContent = `✓ ${nameStr} · ${fmtDate(D.inventory.loaded_at)} · ${count} units${holds?' · '+holds+' holds':''}`;
+    const occDbg = D.inventory._occ_debug;
+    const occNote = occDbg && occDbg.length ? ` · occ values: [${occDbg.join(', ')}]` : '';
+    el.textContent = `✓ ${nameStr} · ${fmtDate(D.inventory.loaded_at)} · ${count} units${holds?' · '+holds+' holds':''}${occNote}`;
     el.style.color = 'var(--green)';
   } else {
     el.textContent = 'No inventory loaded — drag xlsx here or click Import';
@@ -2818,19 +2820,27 @@ function importInventoryFiles(files) {
         const wb = XLSX.read(e.target.result, { type: 'array', cellDates: true });
         const ws = wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+        // Case-insensitive column lookup helper
+        const col = (row, ...names) => {
+          for (const n of names) {
+            const key = Object.keys(row).find(k => k.trim().toLowerCase() === n.toLowerCase());
+            if (key !== undefined && row[key] !== '' && row[key] !== undefined) return row[key];
+          }
+          return '';
+        };
         rows.forEach(row => {
-          const prop = row['Property Name'] || row['Property'] || row['property'] || '';
-          const unit = String(row['Unit'] || row['unit'] || row['UNIT'] || '');
-          const br = parseInt(row['BR'] || row['Bedrooms'] || row['Bedroom'] || row['BRs'] || 0);
-          const rent = parseFloat(String(row['Market Rent'] || row['MarketRent'] || row['Mkt Rent'] || row['Rent'] || '').replace(/[^0-9.]/g,'')) || 0;
-          const occ = row['Occ.'] || row['Occ'] || row['Status'] || '';
+          const prop = String(col(row,'Property Name','Property','property') || '');
+          const unit = String(col(row,'Unit','unit','UNIT') || '');
+          const br = parseInt(col(row,'BR','Bedrooms','Bedroom','BRs','Bed') || 0);
+          const rent = parseFloat(String(col(row,'Market Rent','MarketRent','Mkt Rent','Rent','Market') || '').replace(/[^0-9.]/g,'')) || 0;
+          const occ = String(col(row,'Occ.','Occ','Occupancy','Status','occ') || '');
           let dateAvail = null;
-          const rawDate = row['Date Available'] || row['Available'] || row['Avail Date'] || '';
+          const rawDate = col(row,'Date Available','Available','Avail Date','Avail','Move-in Date');
           if (rawDate && rawDate !== '') {
             if (rawDate instanceof Date) dateAvail = rawDate.toISOString().slice(0,10);
             else if (typeof rawDate === 'string' && rawDate.trim()) dateAvail = rawDate.trim();
           }
-          const daysVac = parseInt(row['Days Vac.'] || row['Days Vac'] || row['Days Vacant'] || 0);
+          const daysVac = parseInt(col(row,'Days Vac.','Days Vac','Days Vacant','Days') || 0);
           if (prop && unit && rent > 0) {
             merged[prop+'::'+unit] = { property: prop, unit, br, rent, date_avail: dateAvail, occ, days_vac: daysVac };
           }
@@ -2844,6 +2854,8 @@ function importInventoryFiles(files) {
         D.inventory.units = units;
         D.inventory.loaded_at = new Date().toISOString().slice(0,10);
         D.inventory.file_names = allNames;
+        const occValues = [...new Set(units.map(u => u.occ).filter(Boolean))];
+        D.inventory._occ_debug = occValues;
         saveData();
         populatePropFilter();
         populateMonthFilter();
